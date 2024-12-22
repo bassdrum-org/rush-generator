@@ -3,7 +3,7 @@ import os
 import glob
 import datetime
 import csv
-
+import time
 
 #文字書き込み関数 
 def drawText(_anchorX,_anchorY,_frame,_text,_position,_font_scale):
@@ -237,4 +237,16 @@ JST = datetime.timezone(t_delta, 'JST')
 now = datetime.datetime.now(JST)
 d = now.strftime('%Y%m%d%H%M')
 output_video_path = current + '/out/rush_' + d + '.mp4'
+#時間計測開始
+start_time = time.time()
+print("Start")
+
+#メイン処理
 merge_videos_with_frame_numbers(current,csv_path,output_video_path,100)
+
+# 計測終了
+end_time = time.time()
+# 経過時間を計算
+elapsed_time = end_time - start_time
+
+print(f"EndExport. Processing time{elapsed_time:.2f}seconds")
