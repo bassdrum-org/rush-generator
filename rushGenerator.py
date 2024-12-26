@@ -80,10 +80,10 @@ def add_caption_to_frame(_frame,_resolution,_fps,_project_name,_text_ts_info,_to
     text_ts = f"TS ({ts_seconds}:{ts_frames:02})"
     # フレームに字幕を追加
     #上部情報
-    drawText('left','top',_frame,_project_name,(50,30),1.25)
+    drawText('left','top',_frame,_project_name,(50,40),1.25)
     drawText('left','bottom',_frame,_text_ts_info[_video_index],(50,100),0.75)
 
-    drawText('left','top',_frame,_text_cut_num[_video_index],(400,30),1.25)
+    drawText('left','top',_frame,_text_cut_num[_video_index],(400,40),1.25)
     drawText('left','center',_frame,_text_cut_take[_video_index],(400,75),1)
             
     if _cut_status[_video_index] != None:
@@ -99,9 +99,9 @@ def add_caption_to_frame(_frame,_resolution,_fps,_project_name,_text_ts_info,_to
         drawText('left','top',_frame,'NoFile',(1600,10),0.75)
             
     if _cut_filedate != 'NoFile':
-        drawText('left','bottom',_frame,_cut_filedate,(1600,90),0.75)
+        drawText('left','bottom',_frame,_cut_filedate,(1600,100),0.75)
     else:
-        drawText('left','bottom',_frame,'NoFile',(1600,90),0.75)
+        drawText('left','bottom',_frame,'NoFile',(1600,100),0.75)
 
             
     text_local_frame = f"{(_local_frame_number + 1):04}"
@@ -151,70 +151,83 @@ def merge_videos_with_frame_numbers(_current_path,_csv_path, output_path, _paddi
     video_index = 0
     
     assetsPath = _current_path + '/videos/'
-    dirs = sorted(os.listdir(assetsPath))
-    for dir in dirs:
-        
-        dirPath = os.path.join(assetsPath , dir)
-        files = sorted(os.listdir(dirPath))
-        if len(os.listdir(dirPath)) != 0:
-            print('here file')
-            for file in files:
-                #ファイルの更新日時
-                if os.listdir(dirPath):
-                    updated_time = os.path.getmtime(dirPath + '/' + file)
-                    updated_dt = datetime.datetime.fromtimestamp(updated_time)
-                else:
-                    updated_dt = datetime.datetime(1970, 1, 1)  # デフォルト日時
-                text_cut_filedate =updated_dt.strftime('%Y%m%d')
+    dirs = sorted([f for f in os.listdir(assetsPath) if os.path.isdir(os.path.join(assetsPath, f))])
+    print(dirs)
 
-                ext = os.path.splitext(file)[1].lower()
-                if ext in ['.jpg', '.png', '.jpeg']:
-                    print('StartProcess>>cut_' + str(video_index) + ' :image') 
-                    #画像ファイルの場合
-                    img = cv2.imread(dirPath + '/' + file)
-                    print('loaded ' + file)
+    print(text_cut_num)
+
+    for cut in text_cut_num:
+        found_cut = False
+        for dir in dirs:
+            if cut == dir:
+                found_cut = True    
+                dirPath = os.path.join(assetsPath , dir)
+                files = [file for file in os.listdir(dirPath) if file != '.DS_Store']
+                if len(os.listdir(dirPath)) != 0:
+                    print('here file')
+                    for file in files:
+                        #ファイルの更新日時
+                        if os.listdir(dirPath):
+                            if file == '.DS_Store':
+                                continue
+                            updated_time = os.path.getmtime(dirPath + '/' + file)
+                            updated_dt = datetime.datetime.fromtimestamp(updated_time)
+                        else:
+                            updated_dt = datetime.datetime(1970, 1, 1)  # デフォルト日時
+                        text_cut_filedate =updated_dt.strftime('%Y%m%d')
+
+                        ext = os.path.splitext(file)[1].lower()
+                        if ext in ['.jpg', '.png', '.jpeg']:
+                            print('StartProcess>>cut_' + str(video_index) + ' :image') 
+                            #画像ファイルの場合
+                            img = cv2.imread(dirPath + '/' + file)
+                            print('loaded ' + file)
+                            duration =  (int(text_cut_length_second[video_index]) * fps) + int(text_cut_length_frame[video_index])
+                            local_frame_number = 0
+                            for _ in range(duration):
+                                resize_img_frame = resize_and_add_padding(img, (width,height), _padding)
+                                add_caption_img_frame = add_caption_to_frame(resize_img_frame,(width,height),fps,text_project_name,text_cut_ts_info,total_frame_number,text_cut_num,text_cut_take,text_cut_status,text_cut_staff,text_cut_filedate,local_frame_number,video_index)
+                                out.write(add_caption_img_frame)
+                                total_frame_number += 1
+                                local_frame_number+=1
+                                continue
+                            print('EndProcess')
+                        elif ext in ['.mp4', '.avi', '.mov']:
+                            print('StartProcess>>cut_' + str(video_index) + ' :video') 
+                            video = cv2.VideoCapture(dirPath + '/' + file)
+                            print('loaded ' + file)
+                            if video.isOpened():
+                                #動画ファイルの場合 
+                                local_frame_number = 0
+                                while video.isOpened():
+                                    ret, frame = video.read()
+                                    if not ret:
+                                        break
+                                    resize_frame = resize_and_add_padding(frame,(width,height), _padding)
+                                    add_caption_frame = add_caption_to_frame(resize_frame,(width,height),fps,text_project_name,text_cut_ts_info,total_frame_number,text_cut_num,text_cut_take,text_cut_status,text_cut_staff,text_cut_filedate,local_frame_number,video_index)
+                                    out.write(add_caption_frame)
+                                    total_frame_number += 1
+                                    local_frame_number += 1
+                                video.release()
+                            print('EndProcess')  
+                        else:
+                            print('found other format file')  
+                else:
+                    #なにもなかった場合
+                    print('StartProcess>>cut_' + str(video_index) + ' :blank') 
+                    text_cut_filedate ='NoFile'
                     duration =  (int(text_cut_length_second[video_index]) * fps) + int(text_cut_length_frame[video_index])
                     local_frame_number = 0
                     for _ in range(duration):
-                        resize_img_frame = resize_and_add_padding(img, (width,height), _padding)
-                        add_caption_img_frame = add_caption_to_frame(resize_img_frame,(width,height),fps,text_project_name,text_cut_ts_info,total_frame_number,text_cut_num,text_cut_take,text_cut_status,text_cut_staff,text_cut_filedate,local_frame_number,video_index)
-                        out.write(add_caption_img_frame)
+                        blank_frame = create_blank_frame(width, height, _padding, color=(0, 0, 0))
+                        add_caption_blank_frame = add_caption_to_frame(blank_frame, (width, height), fps, text_project_name,text_cut_ts_info, total_frame_number, text_cut_num,text_cut_take, text_cut_status, text_cut_staff,text_cut_filedate, local_frame_number, video_index)
+                        drawText('center','center',add_caption_blank_frame,'No File',(width/2,height/2 + _padding),2)
+                        out.write(add_caption_blank_frame)
                         total_frame_number += 1
-                        local_frame_number+=1
-                        continue
+                        local_frame_number += 1
                     print('EndProcess')
-                elif ext in ['.mp4', '.avi', '.mov']:
-                    print('StartProcess>>cut_' + str(video_index) + ' :video') 
-                    video = cv2.VideoCapture(dirPath + '/' + file)
-                    print('loaded ' + file)
-                    if video.isOpened():
-                        #動画ファイルの場合 
-                        local_frame_number = 0
-                        while video.isOpened():
-                            ret, frame = video.read()
-                            if not ret:
-                                break
-                            resize_frame = resize_and_add_padding(frame,(width,height), _padding)
-                            add_caption_frame = add_caption_to_frame(resize_frame,(width,height),fps,text_project_name,text_cut_ts_info,total_frame_number,text_cut_num,text_cut_take,text_cut_status,text_cut_staff,text_cut_filedate,local_frame_number,video_index)
-                            out.write(add_caption_frame)
-                            total_frame_number += 1
-                            local_frame_number += 1
-                        video.release()
-                    print('EndProcess')    
-        else:
-            #なにもなかった場合
-            print('StartProcess>>cut_' + str(video_index) + ' :blank') 
-            text_cut_filedate ='NoFile'
-            duration =  (int(text_cut_length_second[video_index]) * fps) + int(text_cut_length_frame[video_index])
-            local_frame_number = 0
-            for _ in range(duration):
-                blank_frame = create_blank_frame(width, height, _padding, color=(0, 0, 0))
-                add_caption_blank_frame = add_caption_to_frame(blank_frame, (width, height), fps, text_project_name,text_cut_ts_info, total_frame_number, text_cut_num,text_cut_take, text_cut_status, text_cut_staff,text_cut_filedate, local_frame_number, video_index)
-                drawText('center','center',add_caption_blank_frame,'No File',(width/2,height/2 + _padding),2)
-                out.write(add_caption_blank_frame)
-                total_frame_number += 1
-                local_frame_number += 1
-            print('EndProcess')
+        if found_cut != True:
+            print("not found cut directory")
         video_index += 1
 
     out.release()
