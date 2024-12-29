@@ -1,2 +1,4 @@
-out/
-videos/
+out/*
+!out/.gitkeep
+videos/*
+!videos/.gitkeep
