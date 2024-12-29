@@ -22,5 +22,5 @@ pip install -r requirements.txt
 
 ```bash
 cd /path/to/your/project
-python main.py
+python rushGenerator.py
 ```
