@@ -4,6 +4,7 @@ import glob
 import datetime
 import csv
 import time
+import random
 
 #文字書き込み関数 
 def drawText(_anchorX,_anchorY,_frame,_text,_position,_font_scale):
@@ -218,8 +219,10 @@ def merge_videos_with_frame_numbers(_current_path,_csv_path, output_path, _paddi
                     text_cut_filedate ='NoFile'
                     duration =  (int(text_cut_length_second[video_index]) * fps) + int(text_cut_length_frame[video_index])
                     local_frame_number = 0
+                    random_color = tuple(random.randint(150,255) for _ in range(3))
                     for _ in range(duration):
                         blank_frame = create_blank_frame(width, height, _padding, color=(0, 0, 0))
+                        cv2.rectangle(blank_frame,(0,_padding),(width,height + _padding), random_color, -1)
                         add_caption_blank_frame = add_caption_to_frame(blank_frame, (width, height), fps, text_project_name,text_cut_ts_info, total_frame_number, text_cut_num,text_cut_take, text_cut_status, text_cut_staff,text_cut_filedate, local_frame_number, video_index)
                         drawText('center','center',add_caption_blank_frame,'No File',(width/2,height/2 + _padding),2)
                         out.write(add_caption_blank_frame)
