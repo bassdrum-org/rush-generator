@@ -112,7 +112,7 @@ def add_caption_to_frame(_frame,_resolution,_fps,_project_name,_text_ts_info,_to
     return _frame
 
 #メインの動画書き出し関数
-def merge_videos_with_frame_numbers(_current_path,_csv_path, output_path, _padding):
+def merge_videos_with_frame_numbers(_current_path,_project_csv_path,_csv_path, output_path, _padding):
     text_cut_length_frame =[]
     text_cut_length_second =[]
     text_cut_ts_info = []
@@ -122,23 +122,28 @@ def merge_videos_with_frame_numbers(_current_path,_csv_path, output_path, _paddi
     text_cut_staff = []
     text_cut_filedate = []
     #CSVファイルの読み込み
-    with open(_csv_path, mode='r', encoding='utf-8') as file:
-        reader = csv.reader(file)
-        next(reader)  # 最初の行（ヘッダー）をスキップ
-        for line_number,row in enumerate(reader, start=0):
-            text_cut_num.append(row[4])
-            text_cut_length_second.append(row[5])
-            text_cut_length_frame.append(row[6])
-            text_cut_ts_info.append(f"{row[5]} + {row[6]}")
-            text_cut_status.append(row[7])
-            text_cut_take.append(row[8])
-            text_cut_staff.append(row[9])
+    with open(_project_csv_path, mode='r', encoding='utf-8') as _file:
+        reader_project = csv.reader(_file)
+        next(reader_project)  # 最初の行（ヘッダー）をスキップ
+        for line_number,row in enumerate(reader_project, start=0):
             if line_number == 0:
                 text_project_name = row[0]
                 width = int(row[1])
                 height = int(row[2])
                 fps = int(row[3])
-        print('SettingImported! size = (' + str(width) + ',' + str(height) + ') fps = ' + str(fps) )
+
+    with open(_csv_path, mode='r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        next(reader)  # 最初の行（ヘッダー）をスキップ
+        for line_number,row in enumerate(reader, start=0):
+            text_cut_num.append(row[0])
+            text_cut_length_second.append(row[1])
+            text_cut_length_frame.append(row[2])
+            text_cut_ts_info.append(f"{row[1]} + {row[2]}")
+            text_cut_status.append(row[3])
+            text_cut_take.append(row[4])
+            text_cut_staff.append(row[5])
+    print('SettingImported! size = (' + str(width) + ',' + str(height) + ') fps = ' + str(fps) )
     # 出力動画を設定
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_path, int(fourcc), fps, (width, height + (_padding*2)))
@@ -245,7 +250,8 @@ def merge_videos_with_frame_numbers(_current_path,_csv_path, output_path, _paddi
 #以下出力実行------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 current = os.path.dirname(__file__)#現在のファイルのパス
 #csvのパス
-csv_path = current + "/RushInfo.csv"
+csv_path_project = current + "/project_info.csv"
+csv_path_cut = current + "/cut_info.csv"
 
 # 時刻を取得してアウトプットファイル名に
 t_delta = datetime.timedelta(hours=9)
@@ -258,7 +264,7 @@ start_time = time.time()
 print("Start")
 
 #メイン処理
-merge_videos_with_frame_numbers(current,csv_path,output_video_path,100)
+merge_videos_with_frame_numbers(current,csv_path_project,csv_path_cut,output_video_path,100)
 
 # 計測終了
 end_time = time.time()
