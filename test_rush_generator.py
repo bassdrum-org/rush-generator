@@ -290,5 +290,155 @@ class TestRushGenerator(unittest.TestCase):
             self.assertTrue(os.path.exists(output_path))
             self.assertTrue(os.path.getsize(output_path) > 0)
 
+    def test_read_project_info_error(self):
+        """read_project_info関数のエラーケースのテスト"""
+        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.csv', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            writer.writerow(["Project Name", "Width", "Height", "FPS"])
+            csv_path = f.name
+
+        try:
+            with self.assertRaises(ValueError) as context:
+                read_project_info(csv_path)
+            self.assertEqual(str(context.exception), "Project info not found in CSV")
+        finally:
+            os.unlink(csv_path)
+
+    def test_process_media_file_image(self):
+        """process_media_file関数の画像処理テスト"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # テスト用の画像を作成
+            img_path = os.path.join(temp_dir, "test.png")
+            img = np.zeros((720, 1280, 3), dtype=np.uint8)
+            cv2.imwrite(img_path, img)
+
+            frames, frame_count = process_media_file(
+                img_path, 1920, 1080, 100, 30,
+                "Test Project", ["1:00 + 15"], 0,
+                ["A0001"], ["Take1"], ["OK"],
+                ["Staff A"], "20250123", 0,
+                duration=30
+            )
+
+            self.assertEqual(len(frames), 30)
+            self.assertEqual(frame_count, 30)
+
+    def test_process_media_file_image_no_duration(self):
+        """process_media_file関数の画像処理エラーケースのテスト"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            img_path = os.path.join(temp_dir, "test.png")
+            img = np.zeros((720, 1280, 3), dtype=np.uint8)
+            cv2.imwrite(img_path, img)
+
+            with self.assertRaises(ValueError) as context:
+                process_media_file(
+                    img_path, 1920, 1080, 100, 30,
+                    "Test Project", ["1:00 + 15"], 0,
+                    ["A0001"], ["Take1"], ["OK"],
+                    ["Staff A"], "20250123", 0
+                )
+            self.assertEqual(str(context.exception), "Duration is required for image files")
+
+    def test_merge_videos_with_frame_numbers_with_files(self):
+        """merge_videos_with_frame_numbers関数のファイルありケースのテスト"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # プロジェクト情報CSVの作成
+            project_csv_path = os.path.join(temp_dir, "project_info.csv")
+            with open(project_csv_path, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow(["Project Name", "Width", "Height", "FPS"])
+                writer.writerow(["Test Project", "1920", "1080", "30"])
+
+            # カット情報CSVの作成
+            cut_csv_path = os.path.join(temp_dir, "cut_info.csv")
+            with open(cut_csv_path, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow(["Cut Number", "Seconds", "Frames", "Status", "Take", "Staff"])
+                writer.writerow(["A0001", "1", "0", "OK", "Take1", "Staff A"])
+
+            # テスト用の動画ディレクトリとファイルを作成
+            videos_dir = os.path.join(temp_dir, "videos", "A0001")
+            os.makedirs(videos_dir)
+            img_path = os.path.join(videos_dir, "test.png")
+            img = np.zeros((720, 1280, 3), dtype=np.uint8)
+            cv2.imwrite(img_path, img)
+
+            # 出力ファイルパス
+            output_path = os.path.join(temp_dir, "output.mp4")
+
+            # 関数の実行
+            merge_videos_with_frame_numbers(
+                temp_dir,
+                project_csv_path,
+                cut_csv_path,
+                output_path,
+                100
+            )
+
+            # 出力ファイルが作成されたことを確認
+            self.assertTrue(os.path.exists(output_path))
+            self.assertTrue(os.path.getsize(output_path) > 0)
+
+    def test_process_media_file_video(self):
+        """process_media_file関数の動画処理テスト"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # テスト用の動画を作成
+            video_path = os.path.join(temp_dir, "test.mp4")
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            out = cv2.VideoWriter(video_path, fourcc, 30, (1280, 720))
+            
+            # 3フレームの動画を作成
+            for _ in range(3):
+                frame = np.zeros((720, 1280, 3), dtype=np.uint8)
+                out.write(frame)
+            out.release()
+
+            frames, frame_count = process_media_file(
+                video_path, 1920, 1080, 100, 30,
+                "Test Project", ["1:00 + 15"], 0,
+                ["A0001"], ["Take1"], ["OK"],
+                ["Staff A"], "20250123", 0
+            )
+
+            self.assertEqual(len(frames), 3)
+            self.assertEqual(frame_count, 3)
+
+    def test_merge_videos_with_frame_numbers_empty_directory_with_duration(self):
+        """merge_videos_with_frame_numbers関数の空ディレクトリ処理テスト"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # プロジェクト情報CSVの作成
+            project_csv_path = os.path.join(temp_dir, "project_info.csv")
+            with open(project_csv_path, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow(["Project Name", "Width", "Height", "FPS"])
+                writer.writerow(["Test Project", "1920", "1080", "30"])
+
+            # カット情報CSVの作成
+            cut_csv_path = os.path.join(temp_dir, "cut_info.csv")
+            with open(cut_csv_path, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.writer(f)
+                writer.writerow(["Cut Number", "Seconds", "Frames", "Status", "Take", "Staff"])
+                writer.writerow(["A0001", "1", "0", "OK", "Take1", "Staff A"])
+
+            # 空のディレクトリを作成
+            videos_dir = os.path.join(temp_dir, "videos", "A0001")
+            os.makedirs(videos_dir)
+
+            # 出力ファイルパス
+            output_path = os.path.join(temp_dir, "output.mp4")
+
+            # 関数の実行
+            merge_videos_with_frame_numbers(
+                temp_dir,
+                project_csv_path,
+                cut_csv_path,
+                output_path,
+                100
+            )
+
+            # 出力ファイルが作成されたことを確認
+            self.assertTrue(os.path.exists(output_path))
+            self.assertTrue(os.path.getsize(output_path) > 0)
+
 if __name__ == '__main__':
     unittest.main()
