@@ -10,7 +10,19 @@ from typing import List, Tuple, Optional, Dict
 
 # タイムコード関連の関数
 def calculate_timecode(frame_number: int, fps: int) -> Dict[str, int]:
-    """フレーム番号からタイムコードを計算"""
+    """フレーム番号からタイムコードを計算する
+
+    Args:
+        frame_number (int): フレーム番号
+        fps (int): フレームレート（1秒あたりのフレーム数）
+
+    Returns:
+        Dict[str, int]: タイムコードを表す辞書
+            - hours (int): 時間
+            - minutes (int): 分
+            - seconds (int): 秒
+            - frames (int): フレーム
+    """
     hours = frame_number // (fps * 3600)
     minutes = (frame_number % (fps * 3600)) // (fps * 60)
     seconds = (frame_number % (fps * 60)) // fps
@@ -23,11 +35,30 @@ def calculate_timecode(frame_number: int, fps: int) -> Dict[str, int]:
     }
 
 def format_timecode(tc_dict: Dict[str, int]) -> str:
-    """タイムコードを文字列にフォーマット"""
+    """タイムコードを文字列形式にフォーマットする
+
+    Args:
+        tc_dict (Dict[str, int]): タイムコードを表す辞書
+            - hours (int): 時間
+            - minutes (int): 分
+            - seconds (int): 秒
+            - frames (int): フレーム
+
+    Returns:
+        str: "HH:MM:SS:FF"形式のタイムコード文字列
+    """
     return f"{tc_dict['hours']:02}:{tc_dict['minutes']:02}:{tc_dict['seconds']:02}:{tc_dict['frames']:02}"
 
 def calculate_timestamp(frame_number: int, fps: int) -> Tuple[int, int]:
-    """フレーム番号からタイムスタンプを計算"""
+    """フレーム番号からタイムスタンプを計算する
+
+    Args:
+        frame_number (int): フレーム番号
+        fps (int): フレームレート（1秒あたりのフレーム数）
+
+    Returns:
+        Tuple[int, int]: (秒, フレーム)のタプル
+    """
     seconds = (frame_number + 1) // fps
     frames = ((frame_number + 1) % fps)
     return seconds, frames
@@ -35,7 +66,19 @@ def calculate_timestamp(frame_number: int, fps: int) -> Tuple[int, int]:
 # テキスト描画関連の関数
 def calculate_text_position(anchor_x: str, anchor_y: str, text: str, position: Tuple[int, int], 
                           font_scale: float, thickness: int = 2) -> Tuple[int, int]:
-    """テキストの描画位置を計算"""
+    """テキストの描画位置を計算する
+
+    Args:
+        anchor_x (str): X軸のアンカーポイント ('left', 'center', 'right')
+        anchor_y (str): Y軸のアンカーポイント ('top', 'center', 'bottom')
+        text (str): 描画するテキスト
+        position (Tuple[int, int]): 基準となる座標 (x, y)
+        font_scale (float): フォントスケール
+        thickness (int, optional): フォントの太さ. デフォルト値は2
+
+    Returns:
+        Tuple[int, int]: テキストの描画開始位置の座標 (x, y)
+    """
     font = cv2.FONT_HERSHEY_SIMPLEX
     size = cv2.getTextSize(text, font, font_scale, thickness)[0]
     
@@ -61,7 +104,17 @@ def calculate_text_position(anchor_x: str, anchor_y: str, text: str, position: T
 
 def drawText(_anchorX: str, _anchorY: str, _frame: np.ndarray, _text: str, 
              _position: Tuple[int, int], _font_scale: float, font_color: Tuple[int, int, int] = (255, 255, 255)):
-    """文字書き込み関数"""
+    """フレームにテキストを描画する
+
+    Args:
+        _anchorX (str): X軸のアンカーポイント ('left', 'center', 'right')
+        _anchorY (str): Y軸のアンカーポイント ('top', 'center', 'bottom')
+        _frame (np.ndarray): 描画対象のフレーム
+        _text (str): 描画するテキスト
+        _position (Tuple[int, int]): テキストの基準位置 (x, y)
+        _font_scale (float): フォントスケール
+        font_color (Tuple[int, int, int], optional): フォントの色 (B,G,R). デフォルト値は白 (255,255,255)
+    """
     font = cv2.FONT_HERSHEY_SIMPLEX
     thickness = 2
     pos = calculate_text_position(_anchorX, _anchorY, _text, _position, _font_scale, thickness)
@@ -69,7 +122,17 @@ def drawText(_anchorX: str, _anchorY: str, _frame: np.ndarray, _text: str,
 
 # フレーム生成関連の関数
 def create_blank_frame(_width: int, _height: int, _padding: int, color: Tuple[int, int, int] = (0, 0, 0)) -> np.ndarray:
-    """黒いフレームを作成する関数"""
+    """指定したサイズの空のフレームを作成する
+
+    Args:
+        _width (int): フレームの幅
+        _height (int): フレームの高さ
+        _padding (int): パディングのサイズ
+        color (Tuple[int, int, int], optional): フレームの背景色 (B,G,R). デフォルト値は黒 (0,0,0)
+
+    Returns:
+        np.ndarray: 作成された空のフレーム
+    """
     blank_height = _height + (2 * _padding)
     blank_frame = cv2.UMat(blank_height, _width, cv2.CV_8UC3).get()
     blank_frame[:, :] = color
@@ -77,7 +140,17 @@ def create_blank_frame(_width: int, _height: int, _padding: int, color: Tuple[in
 
 def resize_and_add_padding(frame: np.ndarray, target_resolution: Tuple[int, int], 
                           padding: int, color: Tuple[int, int, int] = (0, 0, 0)) -> np.ndarray:
-    """フレームをリサイズしてパディングを追加"""
+    """フレームをリサイズしてパディングを追加する
+
+    Args:
+        frame (np.ndarray): 入力フレーム
+        target_resolution (Tuple[int, int]): 目標解像度 (width, height)
+        padding (int): パディングのサイズ
+        color (Tuple[int, int, int], optional): パディングの色 (B,G,R). デフォルト値は黒 (0,0,0)
+
+    Returns:
+        np.ndarray: リサイズされパディングが追加されたフレーム
+    """
     resized_frame = cv2.resize(frame, target_resolution)
     padded_frame = create_blank_frame(target_resolution[0], target_resolution[1], padding, color)
     padded_frame[padding:padding + target_resolution[1], :, :] = resized_frame
@@ -85,7 +158,17 @@ def resize_and_add_padding(frame: np.ndarray, target_resolution: Tuple[int, int]
 
 # ファイル操作関連の関数
 def read_project_info(csv_path: str) -> Tuple[str, int, int, int]:
-    """プロジェクト情報CSVを読み込む"""
+    """プロジェクト情報CSVファイルを読み込む
+
+    Args:
+        csv_path (str): プロジェクト情報CSVファイルのパス
+
+    Returns:
+        Tuple[str, int, int, int]: (プロジェクト名, 幅, 高さ, FPS)
+
+    Raises:
+        ValueError: CSVファイルにプロジェクト情報が見つからない場合
+    """
     with open(csv_path, mode='r', encoding='utf-8') as file:
         reader = csv.reader(file)
         next(reader)  # ヘッダーをスキップ
@@ -95,7 +178,15 @@ def read_project_info(csv_path: str) -> Tuple[str, int, int, int]:
     raise ValueError("Project info not found in CSV")
 
 def read_cut_info(csv_path: str) -> Tuple[List[str], List[str], List[str], List[str], List[str], List[str]]:
-    """カット情報CSVを読み込む"""
+    """カット情報CSVファイルを読み込む
+
+    Args:
+        csv_path (str): カット情報CSVファイルのパス
+
+    Returns:
+        Tuple[List[str], List[str], List[str], List[str], List[str], List[str]]: 
+            (カット番号リスト, 秒数リスト, フレーム数リスト, ステータスリスト, テイクリスト, スタッフリスト)
+    """
     cut_num, cut_length_second, cut_length_frame = [], [], []
     cut_status, cut_take, cut_staff = [], [], []
     
@@ -113,7 +204,15 @@ def read_cut_info(csv_path: str) -> Tuple[List[str], List[str], List[str], List[
     return cut_num, cut_length_second, cut_length_frame, cut_status, cut_take, cut_staff
 
 def get_media_file_info(dir_path: str) -> Tuple[str, datetime.datetime]:
-    """メディアファイルの情報を取得"""
+    """指定ディレクトリ内のメディアファイル情報を取得する
+
+    Args:
+        dir_path (str): メディアファイルが格納されているディレクトリのパス
+
+    Returns:
+        Tuple[str, datetime.datetime]: (ファイル名, 更新日時)
+            ファイルが存在しない場合は ('NoFile', 1970-01-01 00:00:00) を返す
+    """
     files = [f for f in os.listdir(dir_path) if f != '.DS_Store']
     if not files:
         return 'NoFile', datetime.datetime(1970, 1, 1)
@@ -128,7 +227,26 @@ def add_caption_to_frame(_frame: np.ndarray, _resolution: Tuple[int, int], _fps:
                         _text_ts_info: List[str], _total_frame_number: int, _text_cut_num: List[str],
                         _text_cut_take: List[str], _cut_status: List[str], _cut_staff: List[str],
                         _cut_filedate: str, _local_frame_number: int, _video_index: int) -> np.ndarray:
-    """フレームを計算して字幕を追加する関数"""
+    """フレームにキャプション情報を追加する
+
+    Args:
+        _frame (np.ndarray): 入力フレーム
+        _resolution (Tuple[int, int]): フレームの解像度 (width, height)
+        _fps (int): フレームレート
+        _project_name (str): プロジェクト名
+        _text_ts_info (List[str]): タイムスタンプ情報のリスト
+        _total_frame_number (int): 総フレーム数
+        _text_cut_num (List[str]): カット番号のリスト
+        _text_cut_take (List[str]): テイク番号のリスト
+        _cut_status (List[str]): カットステータスのリスト
+        _cut_staff (List[str]): スタッフ情報のリスト
+        _cut_filedate (str): ファイルの日付
+        _local_frame_number (int): 現在のフレーム番号
+        _video_index (int): 動画のインデックス
+
+    Returns:
+        np.ndarray: キャプションが追加されたフレーム
+    """
     _width, _height = _resolution
     
     # タイムコードの計算
@@ -176,7 +294,31 @@ def process_media_file(file_path: str, width: int, height: int, padding: int, fp
                       text_cut_num: List[str], text_cut_take: List[str], cut_status: List[str],
                       cut_staff: List[str], cut_filedate: str, video_index: int,
                       duration: Optional[int] = None) -> Tuple[List[np.ndarray], int]:
-    """メディアファイル（画像/動画）を処理"""
+    """メディアファイル（画像/動画）を処理する
+
+    Args:
+        file_path (str): メディアファイルのパス
+        width (int): 出力フレームの幅
+        height (int): 出力フレームの高さ
+        padding (int): パディングのサイズ
+        fps (int): フレームレート
+        project_name (str): プロジェクト名
+        text_ts_info (List[str]): タイムスタンプ情報のリスト
+        total_frame_number (int): 総フレーム数
+        text_cut_num (List[str]): カット番号のリスト
+        text_cut_take (List[str]): テイク番号のリスト
+        cut_status (List[str]): カットステータスのリスト
+        cut_staff (List[str]): スタッフ情報のリスト
+        cut_filedate (str): ファイルの日付
+        video_index (int): 動画のインデックス
+        duration (Optional[int], optional): 画像ファイルの場合の表示時間（フレーム数）
+
+    Returns:
+        Tuple[List[np.ndarray], int]: (処理済みフレームのリスト, 処理したフレーム数)
+
+    Raises:
+        ValueError: 画像ファイルに対してdurationが指定されていない場合
+    """
     frames = []
     local_frame_number = 0
     
@@ -218,7 +360,15 @@ def process_media_file(file_path: str, width: int, height: int, padding: int, fp
 
 def merge_videos_with_frame_numbers(_current_path: str, _project_csv_path: str, _csv_path: str,
                                   output_path: str, _padding: int):
-    """メインの動画書き出し関数"""
+    """複数の動画/画像ファイルを結合し、フレーム番号とキャプションを追加する
+
+    Args:
+        _current_path (str): 現在のディレクトリパス
+        _project_csv_path (str): プロジェクト情報CSVファイルのパス
+        _csv_path (str): カット情報CSVファイルのパス
+        output_path (str): 出力動画ファイルのパス
+        _padding (int): パディングのサイズ
+    """
     # プロジェクト情報の読み込み
     project_name, width, height, fps = read_project_info(_project_csv_path)
     print(f'SettingImported! size = ({width}{height}) fps = {fps}')
