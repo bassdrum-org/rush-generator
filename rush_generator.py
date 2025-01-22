@@ -7,12 +7,11 @@ import time
 import random
 
 #文字書き込み関数 
-def drawText(_anchorX,_anchorY,_frame,_text,_position,_font_scale):
+def drawText(_anchorX, _anchorY, _frame, _text, _position, _font_scale, font_color=(255, 255, 255)):
     #文字のスタイル
     font = cv2.FONT_HERSHEY_SIMPLEX
-    font_color = (255, 255, 255)  # 白
     thickness = 2
-    size= cv2.getTextSize(_text,font,_font_scale,thickness)[0]
+    size = cv2.getTextSize(_text, font, _font_scale, thickness)[0]
     pos_x = _position[0]
     pos_y = _position[1]
     if _anchorX == 'left':
@@ -32,7 +31,7 @@ def drawText(_anchorX,_anchorY,_frame,_text,_position,_font_scale):
     pos_x += offsetX
     pos_y += offsetY
     pos = [int(pos_x), int(pos_y)]
-    cv2.putText(_frame, _text,pos, font, _font_scale, font_color,thickness)
+    cv2.putText(_frame, _text, pos, font, _font_scale, font_color, thickness)
     
 # 黒いフレームを作成する関数（背景色指定可能）
 def create_blank_frame(_width, _height, _padding, color=(0, 0, 0)):
@@ -230,7 +229,7 @@ def merge_videos_with_frame_numbers(_current_path,_project_csv_path,_csv_path, o
                         blank_frame = create_blank_frame(width, height, _padding, color=(0, 0, 0))
                         cv2.rectangle(blank_frame,(0,_padding),(width,height + _padding), random_color, -1)
                         add_caption_blank_frame = add_caption_to_frame(blank_frame, (width, height), fps, text_project_name,text_cut_ts_info, total_frame_number, text_cut_num,text_cut_take, text_cut_status, text_cut_staff,text_cut_filedate, local_frame_number, video_index)
-                        drawText('center','center',add_caption_blank_frame,'No File',(width/2,height/2 + _padding),2)
+                        drawText('center','center',add_caption_blank_frame,'No File',(_width/2,(_height/2) + _padding),2)
                         out.write(add_caption_blank_frame)
                         total_frame_number += 1
                         local_frame_number += 1
