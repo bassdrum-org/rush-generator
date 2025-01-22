@@ -223,10 +223,84 @@ def get_media_file_info(dir_path: str) -> Tuple[str, datetime.datetime]:
     return file, updated_dt
 
 # キャプション関連の関数
+def generate_timecode_info(_local_frame_number: int, _total_frame_number: int, _fps: int) -> Tuple[str, str, str, str]:
+    """タイムコード関連の情報を生成する
+
+    Args:
+        _local_frame_number (int): 現在のフレーム番号
+        _total_frame_number (int): 総フレーム数
+        _fps (int): フレームレート
+
+    Returns:
+        Tuple[str, str, str, str]: (総タイムコード, TCテキスト, TSテキスト, フレーム番号テキスト)
+    """
+    total_tc = calculate_timecode(_total_frame_number, _fps)
+    total_text_tc = format_timecode(total_tc)
+    
+    local_tc = calculate_timecode(_local_frame_number, _fps)
+    text_tc = f"TC {format_timecode(local_tc)}"
+    
+    ts_seconds, ts_frames = calculate_timestamp(_local_frame_number, _fps)
+    text_ts = f"TS ({ts_seconds}:{ts_frames:02})"
+    
+    text_local_frame = f"{(_local_frame_number + 1):04}"
+    
+    return total_text_tc, text_tc, text_ts, text_local_frame
+
+def draw_project_info(_frame: np.ndarray, _project_name: str, _text_ts_info: str,
+                     _width: int) -> None:
+    """プロジェクト情報を描画する
+
+    Args:
+        _frame (np.ndarray): 入力フレーム
+        _project_name (str): プロジェクト名
+        _text_ts_info (str): タイムスタンプ情報
+        _width (int): フレームの幅
+    """
+    drawText('left', 'top', _frame, _project_name, (50, 35), 1)
+    drawText('left', 'bottom', _frame, _text_ts_info, (50, 100), 0.75)
+    
+def draw_cut_info(_frame: np.ndarray, _cut_num: str, _cut_take: str,
+                  _cut_status: Optional[str]) -> None:
+    """カット情報を描画する
+
+    Args:
+        _frame (np.ndarray): 入力フレーム
+        _cut_num (str): カット番号
+        _cut_take (str): テイク番号
+        _cut_status (Optional[str]): カットステータス
+    """
+    drawText('left', 'top', _frame, _cut_num, (400, 30), 0.75)
+    drawText('left', 'center', _frame, _cut_take, (400, 65), 0.75)
+    
+    if _cut_status is not None:
+        drawText('left', 'bottom', _frame, _cut_status, (400, 100), 0.75)
+    else:
+        drawText('left', 'bottom', _frame, 'NoFile', (200, 100), 0.75)
+
+def draw_staff_info(_frame: np.ndarray, _cut_staff: Optional[str],
+                    _cut_filedate: str) -> None:
+    """スタッフ情報を描画する
+
+    Args:
+        _frame (np.ndarray): 入力フレーム
+        _cut_staff (Optional[str]): スタッフ情報
+        _cut_filedate (str): ファイルの日付
+    """
+    if _cut_staff is not None:
+        drawText('left', 'top', _frame, _cut_staff, (1600, 30), 0.75)
+    else:
+        drawText('left', 'top', _frame, 'NoFile', (1600, 10), 0.75)
+    
+    if _cut_filedate != 'NoFile':
+        drawText('left', 'bottom', _frame, _cut_filedate, (1600, 100), 0.75)
+    else:
+        drawText('left', 'bottom', _frame, 'NoFile', (1600, 100), 0.75)
+
 def add_caption_to_frame(_frame: np.ndarray, _resolution: Tuple[int, int], _fps: int, _project_name: str,
-                        _text_ts_info: List[str], _total_frame_number: int, _text_cut_num: List[str],
-                        _text_cut_take: List[str], _cut_status: List[str], _cut_staff: List[str],
-                        _cut_filedate: str, _local_frame_number: int, _video_index: int) -> np.ndarray:
+                         _text_ts_info: List[str], _total_frame_number: int, _text_cut_num: List[str],
+                         _text_cut_take: List[str], _cut_status: List[str], _cut_staff: List[str],
+                         _cut_filedate: str, _local_frame_number: int, _video_index: int) -> np.ndarray:
     """フレームにキャプション情報を追加する
 
     Args:
@@ -249,44 +323,28 @@ def add_caption_to_frame(_frame: np.ndarray, _resolution: Tuple[int, int], _fps:
     """
     _width, _height = _resolution
     
-    # タイムコードの計算
-    total_tc = calculate_timecode(_total_frame_number, _fps)
-    total_text_tc = format_timecode(total_tc)
+    # タイムコード関連の情報生成
+    total_text_tc, text_tc, text_ts, text_local_frame = generate_timecode_info(
+        _local_frame_number, _total_frame_number, _fps
+    )
     
-    local_tc = calculate_timecode(_local_frame_number, _fps)
-    text_tc = f"TC {format_timecode(local_tc)}"
+    # プロジェクト情報の描画
+    draw_project_info(_frame, _project_name, _text_ts_info[_video_index], _width)
     
-    ts_seconds, ts_frames = calculate_timestamp(_local_frame_number, _fps)
-    text_ts = f"TS ({ts_seconds}:{ts_frames:02})"
+    # カット情報の描画
+    draw_cut_info(_frame, _text_cut_num[_video_index], _text_cut_take[_video_index],
+                 _cut_status[_video_index])
     
-    # フレームに字幕を追加
-    drawText('left', 'top', _frame, _project_name, (50, 35), 1)
-    drawText('left', 'bottom', _frame, _text_ts_info[_video_index], (50, 100), 0.75)
-    
-    drawText('left', 'top', _frame, _text_cut_num[_video_index], (400, 30), 0.75)
-    drawText('left', 'center', _frame, _text_cut_take[_video_index], (400, 65), 0.75)
-    
-    if _cut_status[_video_index] is not None:
-        drawText('left', 'bottom', _frame, _cut_status[_video_index], (400, 100), 0.75)
-    else:
-        drawText('left', 'bottom', _frame, 'NoFile', (200, 100), 0.75)
-    
+    # 中央のタイムコード表示
     drawText('center', 'center', _frame, total_text_tc, (_width/2, 90), 2)
     
-    if _cut_staff[_video_index] is not None:
-        drawText('left', 'top', _frame, _cut_staff[_video_index], (1600, 30), 0.75)
-    else:
-        drawText('left', 'top', _frame, 'NoFile', (1600, 10), 0.75)
+    # スタッフ情報の描画
+    draw_staff_info(_frame, _cut_staff[_video_index], _cut_filedate)
     
-    if _cut_filedate != 'NoFile':
-        drawText('left', 'bottom', _frame, _cut_filedate, (1600, 100), 0.75)
-    else:
-        drawText('left', 'bottom', _frame, 'NoFile', (1600, 100), 0.75)
-    
-    text_local_frame = f"{(_local_frame_number + 1):04}"
+    # フレーム情報の描画
     text_cut_frameinfo = f"{text_tc} - {text_ts} - {text_local_frame}"
-    
     drawText('center', 'bottom', _frame, text_cut_frameinfo, (_width/2, _height + 190), 1.5)
+    
     return _frame
 
 def process_media_file(file_path: str, width: int, height: int, padding: int, fps: int,
@@ -358,8 +416,88 @@ def process_media_file(file_path: str, width: int, height: int, padding: int, fp
         
     return frames, local_frame_number
 
+def initialize_project_settings(_project_csv_path: str, _csv_path: str) -> Tuple[str, int, int, int, List[str], List[str]]:
+    """プロジェクトの設定を初期化する
+
+    Args:
+        _project_csv_path (str): プロジェクト情報CSVファイルのパス
+        _csv_path (str): カット情報CSVファイルのパス
+
+    Returns:
+        Tuple[str, int, int, int, List[str], List[str]]:
+            (プロジェクト名, 幅, 高さ, FPS, カット番号リスト, タイムスタンプ情報リスト)
+    """
+    project_name, width, height, fps = read_project_info(_project_csv_path)
+    print(f'SettingImported! size = ({width}{height}) fps = {fps}')
+    
+    cut_num, cut_length_second, cut_length_frame, cut_status, cut_take, cut_staff = read_cut_info(_csv_path)
+    text_ts_info = [f"{s} + {f}" for s, f in zip(cut_length_second, cut_length_frame)]
+    
+    return project_name, width, height, fps, cut_num, text_ts_info, cut_status, cut_take, cut_staff, cut_length_second, cut_length_frame
+
+def setup_video_writer(output_path: str, width: int, height: int, fps: int, padding: int) -> cv2.VideoWriter:
+    """動画出力の設定を行う
+
+    Args:
+        output_path (str): 出力動画ファイルのパス
+        width (int): 動画の幅
+        height (int): 動画の高さ
+        fps (int): フレームレート
+        padding (int): パディングのサイズ
+
+    Returns:
+        cv2.VideoWriter: 設定された動画ライター
+    """
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(output_path, int(fourcc), fps, (width, height + (padding*2)))
+    
+    if not out.isOpened():
+        raise RuntimeError("VideoWriterを開けませんでした。コーデックやパスを見直してください。")
+    
+    return out
+
+def process_empty_directory(width: int, height: int, padding: int, fps: int,
+                          project_name: str, text_ts_info: List[str], total_frame_number: int,
+                          cut_num: List[str], cut_take: List[str], cut_status: List[str],
+                          cut_staff: List[str], duration: int, video_index: int) -> Tuple[List[np.ndarray], int]:
+    """空のディレクトリを処理する
+
+    Args:
+        width (int): フレームの幅
+        height (int): フレームの高さ
+        padding (int): パディングのサイズ
+        fps (int): フレームレート
+        project_name (str): プロジェクト名
+        text_ts_info (List[str]): タイムスタンプ情報のリスト
+        total_frame_number (int): 総フレーム数
+        cut_num (List[str]): カット番号のリスト
+        cut_take (List[str]): テイク番号のリスト
+        cut_status (List[str]): カットステータスのリスト
+        cut_staff (List[str]): スタッフ情報のリスト
+        duration (int): 生成するフレーム数
+        video_index (int): 動画のインデックス
+
+    Returns:
+        Tuple[List[np.ndarray], int]: (生成されたフレームのリスト, フレーム数)
+    """
+    frames = []
+    random_color = tuple(random.randint(150, 255) for _ in range(3))
+    for local_frame_number in range(duration):
+        blank_frame = create_blank_frame(width, height, padding)
+        cv2.rectangle(blank_frame, (0, padding), (width, height + padding), random_color, -1)
+        add_caption_blank_frame = add_caption_to_frame(
+            blank_frame, (width, height), fps, project_name,
+            text_ts_info, total_frame_number, cut_num,
+            cut_take, cut_status, cut_staff, 'NoFile',
+            local_frame_number, video_index
+        )
+        drawText('center', 'center', add_caption_blank_frame, 'No File',
+                (width/2, height/2 + padding+40), 2, font_color=(0, 0, 0))
+        frames.append(add_caption_blank_frame)
+    return frames, duration
+
 def merge_videos_with_frame_numbers(_current_path: str, _project_csv_path: str, _csv_path: str,
-                                  output_path: str, _padding: int):
+                                   output_path: str, _padding: int):
     """複数の動画/画像ファイルを結合し、フレーム番号とキャプションを追加する
 
     Args:
@@ -369,21 +507,11 @@ def merge_videos_with_frame_numbers(_current_path: str, _project_csv_path: str, 
         output_path (str): 出力動画ファイルのパス
         _padding (int): パディングのサイズ
     """
-    # プロジェクト情報の読み込み
-    project_name, width, height, fps = read_project_info(_project_csv_path)
-    print(f'SettingImported! size = ({width}{height}) fps = {fps}')
-    
-    # カット情報の読み込み
-    cut_num, cut_length_second, cut_length_frame, cut_status, cut_take, cut_staff = read_cut_info(_csv_path)
-    text_ts_info = [f"{s} + {f}" for s, f in zip(cut_length_second, cut_length_frame)]
+    # プロジェクト設定の初期化
+    project_name, width, height, fps, cut_num, text_ts_info, cut_status, cut_take, cut_staff, cut_length_second, cut_length_frame = initialize_project_settings(_project_csv_path, _csv_path)
     
     # 出力動画の設定
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(output_path, int(fourcc), fps, (width, height + (_padding*2)))
-    
-    if not out.isOpened():
-        print("VideoWriterを開けませんでした。コーデックやパスを見直してください。")
-        return
+    out = setup_video_writer(output_path, width, height, fps, _padding)
     
     # 素材ディレクトリの処理
     total_frame_number = 0
@@ -398,13 +526,13 @@ def merge_videos_with_frame_numbers(_current_path: str, _project_csv_path: str, 
             if cut == dir_name:
                 found_cut = True
                 dir_path = os.path.join(assets_path, dir_name)
+                duration = (int(cut_length_second[video_index]) * fps) + int(cut_length_frame[video_index])
                 
                 if os.listdir(dir_path):
                     print(f'StartProcess>>cut_{video_index} :media')
                     file_name, updated_dt = get_media_file_info(dir_path)
                     if file_name != 'NoFile':
                         file_path = os.path.join(dir_path, file_name)
-                        duration = (int(cut_length_second[video_index]) * fps) + int(cut_length_frame[video_index])
                         frames, frame_count = process_media_file(
                             file_path, width, height, _padding, fps,
                             project_name, text_ts_info, total_frame_number,
@@ -412,26 +540,18 @@ def merge_videos_with_frame_numbers(_current_path: str, _project_csv_path: str, 
                             updated_dt.strftime('%Y%m%d'), video_index,
                             duration if file_name.lower().endswith(('.jpg', '.png', '.jpeg')) else None
                         )
-                        for frame in frames:
-                            out.write(frame)
-                        total_frame_number += frame_count
                 else:
                     print(f'StartProcess>>cut_{video_index} :blank')
-                    duration = (int(cut_length_second[video_index]) * fps) + int(cut_length_frame[video_index])
-                    random_color = tuple(random.randint(150, 255) for _ in range(3))
-                    for local_frame_number in range(duration):
-                        blank_frame = create_blank_frame(width, height, _padding)
-                        cv2.rectangle(blank_frame, (0, _padding), (width, height + _padding), random_color, -1)
-                        add_caption_blank_frame = add_caption_to_frame(
-                            blank_frame, (width, height), fps, project_name,
-                            text_ts_info, total_frame_number, cut_num,
-                            cut_take, cut_status, cut_staff, 'NoFile',
-                            local_frame_number, video_index
-                        )
-                        drawText('center', 'center', add_caption_blank_frame, 'No File',
-                               (width/2, height/2 + _padding+40), 2, font_color=(0, 0, 0))
-                        out.write(add_caption_blank_frame)
-                        total_frame_number += 1
+                    frames, frame_count = process_empty_directory(
+                        width, height, _padding, fps, project_name,
+                        text_ts_info, total_frame_number, cut_num,
+                        cut_take, cut_status, cut_staff, duration,
+                        video_index
+                    )
+                
+                for frame in frames:
+                    out.write(frame)
+                total_frame_number += frame_count
                 print('EndProcess')
                 
         if not found_cut:
