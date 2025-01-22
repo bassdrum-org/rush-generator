@@ -2,3 +2,16 @@ out/*
 !out/.gitkeep
 videos/*
 !videos/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.coverage
+*.bak
+
+# IDE
+.vscode/
+.idea/
