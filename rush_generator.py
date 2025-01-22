@@ -81,11 +81,11 @@ def add_caption_to_frame(_frame,_resolution,_fps,_project_name,_text_ts_info,_to
     text_ts = f"TS ({ts_seconds}:{ts_frames:02})"
     # フレームに字幕を追加
     #上部情報
-    drawText('left','top',_frame,_project_name,(50,40),1.25)
+    drawText('left','top',_frame,_project_name,(50,30),0.75)
     drawText('left','bottom',_frame,_text_ts_info[_video_index],(50,100),0.75)
 
-    drawText('left','top',_frame,_text_cut_num[_video_index],(400,40),1.25)
-    drawText('left','center',_frame,_text_cut_take[_video_index],(400,75),1)
+    drawText('left','top',_frame,_text_cut_num[_video_index],(400,30),0.75)
+    drawText('left','center',_frame,_text_cut_take[_video_index],(400,65),0.75)
             
     if _cut_status[_video_index] != None:
         drawText('left','bottom',_frame,_cut_status[_video_index],(400,100),0.75)
