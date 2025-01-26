@@ -127,6 +127,36 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
             print(f'Cut {cut} completed\n')
         else:
             print(f"\nWarning: Cut directory {cut} not found")
+            print(f'Media Type: BLANK (Directory not found)')
+            duration = (int(cut_length_second[video_index]) * fps) + int(cut_length_frame[video_index])
+            frames, frame_count = process_empty_directory(
+                width, height, padding, fps, project_name,
+                text_ts_info, total_frame_number, cut_num,
+                cut_take, cut_status, cut_staff, duration,
+                video_index
+            )
+            
+            # フレーム処理とプログレス更新
+            frame_progress = tqdm(frames, total=frame_count, unit='frames', desc='Cut Progress', leave=False)
+            for frame in frame_progress:
+                out.write(frame)
+                processed_frames += 1
+                progress_bar.update(1)
+                
+                # 処理速度と残り時間の計算
+                elapsed_time = time.time() - start_time
+                fps_rate = processed_frames / elapsed_time
+                remaining_frames = total_frames - processed_frames
+                eta = remaining_frames / fps_rate if fps_rate > 0 else 0
+                
+                # ステータス行の更新
+                progress_bar.set_postfix({
+                    'FPS': f'{fps_rate:.2f}',
+                    'ETA': format_time(eta)
+                })
+            
+            total_frame_number += frame_count
+            print(f'Cut {cut} completed\n')
     
     progress_bar.close()
     out.release()
