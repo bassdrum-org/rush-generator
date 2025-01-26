@@ -1,9 +1,14 @@
 import cv2
 import numpy as np
 from typing import Tuple
+from .constants import (
+    HorizontalAnchor,
+    VerticalAnchor,
+    FontConstants,
+)
 
 def calculate_text_position(anchor_x: str, anchor_y: str, text: str, position: Tuple[int, int], 
-                          font_scale: float, thickness: int = 2) -> Tuple[int, int]:
+                          font_scale: float, thickness: int = FontConstants.DEFAULT_THICKNESS) -> Tuple[int, int]:
     """テキストの描画位置を計算する
 
     Args:
@@ -17,31 +22,30 @@ def calculate_text_position(anchor_x: str, anchor_y: str, text: str, position: T
     Returns:
         Tuple[int, int]: テキストの描画開始位置の座標 (x, y)
     """
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    size = cv2.getTextSize(text, font, font_scale, thickness)[0]
+    size = cv2.getTextSize(text, FontConstants.DEFAULT_FONT, font_scale, thickness)[0]
     
     pos_x, pos_y = position
     
     # X方向のオフセット計算
-    if anchor_x == 'left':
+    if anchor_x == HorizontalAnchor.LEFT.value:
         offset_x = 0
-    elif anchor_x == 'center':
+    elif anchor_x == HorizontalAnchor.CENTER.value:
         offset_x = -(size[0] / 2)
-    elif anchor_x == 'right':
+    elif anchor_x == HorizontalAnchor.RIGHT.value:
         offset_x = -size[0]
     
     # Y方向のオフセット計算
-    if anchor_y == 'top':
+    if anchor_y == VerticalAnchor.TOP.value:
         offset_y = 0
-    elif anchor_y == 'center':
+    elif anchor_y == VerticalAnchor.CENTER.value:
         offset_y = -(size[1] / 2)
-    elif anchor_y == 'bottom':
+    elif anchor_y == VerticalAnchor.BOTTOM.value:
         offset_y = -size[1]
         
     return int(pos_x + offset_x), int(pos_y + offset_y)
 
 def drawText(anchor_x: str, anchor_y: str, frame: np.ndarray, text: str, 
-             position: Tuple[int, int], font_scale: float, font_color: Tuple[int, int, int] = (255, 255, 255)):
+             position: Tuple[int, int], font_scale: float, font_color: Tuple[int, int, int] = FontConstants.DEFAULT_COLOR):
     """フレームにテキストを描画する
 
     Args:
@@ -53,11 +57,7 @@ def drawText(anchor_x: str, anchor_y: str, frame: np.ndarray, text: str,
         font_scale (float): フォントスケール
         font_color (Tuple[int, int, int], optional): フォントの色 (B,G,R). デフォルト値は白 (255,255,255)
     """
-    # 使用するフォントを設定
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    # フォントの太さを設定
-    thickness = 2
     # テキストの描画位置を計算
-    pos = calculate_text_position(anchor_x, anchor_y, text, position, font_scale, thickness)
+    pos = calculate_text_position(anchor_x, anchor_y, text, position, font_scale, FontConstants.DEFAULT_THICKNESS)
     # フレームにテキストを描画
-    cv2.putText(frame, text, pos, font, font_scale, font_color, thickness)
+    cv2.putText(frame, text, pos, FontConstants.DEFAULT_FONT, font_scale, font_color, FontConstants.DEFAULT_THICKNESS)

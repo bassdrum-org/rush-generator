@@ -1,4 +1,22 @@
 from typing import Dict, Tuple
+from enum import Enum
+
+# タイムコード関連の定数
+class TimeConstants:
+    # 時間の単位（秒）
+    SECONDS_PER_HOUR = 3600
+    SECONDS_PER_MINUTE = 60
+
+class TimecodeKeys(Enum):
+    HOURS = 'hours'
+    MINUTES = 'minutes'
+    SECONDS = 'seconds'
+    FRAMES = 'frames'
+
+class TimecodeFormat:
+    # タイムコードのフォーマット指定
+    DIGIT_FORMAT = '02d'  # 2桁の数値として表示
+    SEPARATOR = ':'
 
 def calculate_timecode(frame_number: int, fps: int) -> Dict[str, int]:
     """フレーム番号からタイムコードを計算する
@@ -14,15 +32,15 @@ def calculate_timecode(frame_number: int, fps: int) -> Dict[str, int]:
             - seconds (int): 秒
             - frames (int): フレーム
     """
-    hours = frame_number // (fps * 3600)
-    minutes = (frame_number % (fps * 3600)) // (fps * 60)
-    seconds = (frame_number % (fps * 60)) // fps
+    hours = frame_number // (fps * TimeConstants.SECONDS_PER_HOUR)
+    minutes = (frame_number % (fps * TimeConstants.SECONDS_PER_HOUR)) // (fps * TimeConstants.SECONDS_PER_MINUTE)
+    seconds = (frame_number % (fps * TimeConstants.SECONDS_PER_MINUTE)) // fps
     frames = frame_number % fps
     return {
-        "hours": hours,
-        "minutes": minutes,
-        "seconds": seconds,
-        "frames": frames
+        TimecodeKeys.HOURS.value: hours,
+        TimecodeKeys.MINUTES.value: minutes,
+        TimecodeKeys.SECONDS.value: seconds,
+        TimecodeKeys.FRAMES.value: frames
     }
 
 def format_timecode(tc_dict: Dict[str, int]) -> str:
@@ -38,7 +56,13 @@ def format_timecode(tc_dict: Dict[str, int]) -> str:
     Returns:
         str: "HH:MM:SS:FF"形式のタイムコード文字列
     """
-    return f"{tc_dict['hours']:02}:{tc_dict['minutes']:02}:{tc_dict['seconds']:02}:{tc_dict['frames']:02}"
+    format_str = f"{{:{TimecodeFormat.DIGIT_FORMAT}}}"
+    return TimecodeFormat.SEPARATOR.join([
+        format_str.format(tc_dict[TimecodeKeys.HOURS.value]),
+        format_str.format(tc_dict[TimecodeKeys.MINUTES.value]),
+        format_str.format(tc_dict[TimecodeKeys.SECONDS.value]),
+        format_str.format(tc_dict[TimecodeKeys.FRAMES.value])
+    ])
 
 def calculate_timestamp(frame_number: int, fps: int) -> Tuple[int, int]:
     """フレーム番号からタイムスタンプを計算する

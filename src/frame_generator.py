@@ -1,8 +1,9 @@
 import cv2
 import numpy as np
 from typing import Tuple
+from .constants import FrameConstants
 
-def create_blank_frame(width: int, height: int, padding: int, color: Tuple[int, int, int] = (0, 0, 0)) -> np.ndarray:
+def create_blank_frame(width: int, height: int, padding: int, color: Tuple[int, int, int] = FrameConstants.DEFAULT_BACKGROUND_COLOR) -> np.ndarray:
     """指定したサイズの空のフレームを作成する
 
     Args:
@@ -15,12 +16,12 @@ def create_blank_frame(width: int, height: int, padding: int, color: Tuple[int, 
         np.ndarray: 作成された空のフレーム
     """
     blank_height = height + (2 * padding)
-    blank_frame = cv2.UMat(blank_height, width, cv2.CV_8UC3).get()
+    blank_frame = cv2.UMat(blank_height, width, FrameConstants.FRAME_FORMAT).get()
     blank_frame[:, :] = color
     return blank_frame
 
 def resize_and_add_padding(frame: np.ndarray, target_resolution: Tuple[int, int], 
-                          padding: int, color: Tuple[int, int, int] = (0, 0, 0)) -> np.ndarray:
+                          padding: int, color: Tuple[int, int, int] = FrameConstants.DEFAULT_BACKGROUND_COLOR) -> np.ndarray:
     """フレームをリサイズしてパディングを追加する
 
     Args:

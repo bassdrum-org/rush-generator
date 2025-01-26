@@ -3,6 +3,41 @@ import numpy as np
 from typing import List, Optional, Tuple
 from .text_renderer import drawText
 from .timecode import calculate_timecode, format_timecode, calculate_timestamp
+from .constants import (
+    HorizontalAnchor,
+    VerticalAnchor,
+    FontScale,
+    FontConstants,
+    MediaConstants,
+)
+
+# キャプション位置の定数
+class Position:
+    # プロジェクト情報
+    PROJECT_NAME_X = 50
+    PROJECT_NAME_Y = 35
+    PROJECT_TS_X = 50
+    PROJECT_TS_Y = 100
+
+    # カット情報
+    CUT_NUMBER_X = 400
+    CUT_NUMBER_Y = 30
+    CUT_TAKE_X = 400
+    CUT_TAKE_Y = 65
+    CUT_STATUS_X = 400
+    CUT_STATUS_Y = 100
+    NO_FILE_X = 200
+    NO_FILE_Y = 100
+
+    # スタッフ情報
+    STAFF_INFO_X = 1600
+    STAFF_INFO_Y_TOP = 30
+    STAFF_INFO_Y_NO_FILE = 10
+    STAFF_INFO_Y_BOTTOM = 100
+
+    # タイムコード
+    TIMECODE_Y = 90
+    FRAME_INFO_Y_OFFSET = 190
 
 def generate_timecode_info(local_frame_number: int, total_frame_number: int, fps: int) -> Tuple[str, str, str, str]:
     """タイムコード関連の情報を生成する
@@ -30,7 +65,6 @@ def generate_timecode_info(local_frame_number: int, total_frame_number: int, fps
     # 現在のフレーム番号をテキストとしてフォーマットする
     text_local_frame = f"{(local_frame_number + 1):04}"
     
-    # 計算した情報をタプルとして返す
     return total_text_tc, text_tc, text_ts, text_local_frame
 
 def draw_project_info(frame: np.ndarray, project_name: str, text_ts_info: str,
@@ -43,8 +77,10 @@ def draw_project_info(frame: np.ndarray, project_name: str, text_ts_info: str,
         text_ts_info (str): タイムスタンプ情報
         width (int): フレームの幅
     """
-    drawText('left', 'top', frame, project_name, (50, 35), 1)
-    drawText('left', 'bottom', frame, text_ts_info, (50, 100), 0.75)
+    drawText(HorizontalAnchor.LEFT.value, VerticalAnchor.TOP.value, frame, project_name,
+            (Position.PROJECT_NAME_X, Position.PROJECT_NAME_Y), FontScale.MEDIUM)
+    drawText(HorizontalAnchor.LEFT.value, VerticalAnchor.BOTTOM.value, frame, text_ts_info,
+            (Position.PROJECT_TS_X, Position.PROJECT_TS_Y), FontScale.SMALL)
     
 def draw_cut_info(frame: np.ndarray, cut_num: str, cut_take: str,
                   cut_status: Optional[str]) -> None:
@@ -57,16 +93,20 @@ def draw_cut_info(frame: np.ndarray, cut_num: str, cut_take: str,
         cut_status (Optional[str]): カットステータス
     """
     # カット番号を描画
-    drawText('left', 'top', frame, cut_num, (400, 30), 0.75)
+    drawText(HorizontalAnchor.LEFT.value, VerticalAnchor.TOP.value, frame, cut_num,
+            (Position.CUT_NUMBER_X, Position.CUT_NUMBER_Y), FontScale.SMALL)
     
     # テイク番号を描画
-    drawText('left', 'center', frame, cut_take, (400, 65), 0.75)
+    drawText(HorizontalAnchor.LEFT.value, VerticalAnchor.CENTER.value, frame, cut_take,
+            (Position.CUT_TAKE_X, Position.CUT_TAKE_Y), FontScale.SMALL)
     
     # カットステータスが存在する場合は描画し、存在しない場合は 'No File' を描画
     if cut_status is not None:
-        drawText('left', 'bottom', frame, cut_status, (400, 100), 0.75)
+        drawText(HorizontalAnchor.LEFT.value, VerticalAnchor.BOTTOM.value, frame, cut_status,
+                (Position.CUT_STATUS_X, Position.CUT_STATUS_Y), FontScale.SMALL)
     else:
-        drawText('left', 'bottom', frame, 'No File', (200, 100), 0.75)
+        drawText(HorizontalAnchor.LEFT.value, VerticalAnchor.BOTTOM.value, frame, MediaConstants.NO_FILE_TEXT,
+                (Position.NO_FILE_X, Position.NO_FILE_Y), FontScale.SMALL)
 
 def draw_staff_info(frame: np.ndarray, cut_staff: Optional[str],
                     cut_filedate: str) -> None:
@@ -78,14 +118,18 @@ def draw_staff_info(frame: np.ndarray, cut_staff: Optional[str],
         cut_filedate (str): ファイルの日付
     """
     if cut_staff is not None:
-        drawText('left', 'top', frame, cut_staff, (1600, 30), 0.75)
+        drawText(HorizontalAnchor.LEFT.value, VerticalAnchor.TOP.value, frame, cut_staff,
+                (Position.STAFF_INFO_X, Position.STAFF_INFO_Y_TOP), FontScale.SMALL)
     else:
-        drawText('left', 'top', frame, 'No File', (1600, 10), 0.75)
+        drawText(HorizontalAnchor.LEFT.value, VerticalAnchor.TOP.value, frame, MediaConstants.NO_FILE_TEXT,
+                (Position.STAFF_INFO_X, Position.STAFF_INFO_Y_NO_FILE), FontScale.SMALL)
     
-    if cut_filedate != 'No File':
-        drawText('left', 'bottom', frame, cut_filedate, (1600, 100), 0.75)
+    if cut_filedate != MediaConstants.NO_FILE_TEXT:
+        drawText(HorizontalAnchor.LEFT.value, VerticalAnchor.BOTTOM.value, frame, cut_filedate,
+                (Position.STAFF_INFO_X, Position.STAFF_INFO_Y_BOTTOM), FontScale.SMALL)
     else:
-        drawText('left', 'bottom', frame, 'No File', (1600, 100), 0.75)
+        drawText(HorizontalAnchor.LEFT.value, VerticalAnchor.BOTTOM.value, frame, MediaConstants.NO_FILE_TEXT,
+                (Position.STAFF_INFO_X, Position.STAFF_INFO_Y_BOTTOM), FontScale.SMALL)
 
 def add_caption_to_frame(frame: np.ndarray, resolution: Tuple[int, int], fps: int, project_name: str,
                          text_ts_info: List[str], total_frame_number: int, text_cut_num: List[str],
@@ -126,13 +170,15 @@ def add_caption_to_frame(frame: np.ndarray, resolution: Tuple[int, int], fps: in
                  cut_status[video_index])
     
     # 中央のタイムコード表示
-    drawText('center', 'center', frame, total_text_tc, (width/2, 90), 2)
+    drawText(HorizontalAnchor.CENTER.value, VerticalAnchor.CENTER.value, frame, total_text_tc,
+            (width/2, Position.TIMECODE_Y), FontScale.EXTRA_LARGE)
     
     # スタッフ情報の描画
     draw_staff_info(frame, cut_staff[video_index], cut_filedate)
     
     # フレーム情報の描画
     text_cut_frameinfo = f"{text_tc} - {text_ts} - {text_local_frame}"
-    drawText('center', 'bottom', frame, text_cut_frameinfo, (width/2, height + 190), 1.5)
+    drawText(HorizontalAnchor.CENTER.value, VerticalAnchor.BOTTOM.value, frame, text_cut_frameinfo,
+            (width/2, height + Position.FRAME_INFO_Y_OFFSET), FontScale.LARGE)
     
     return frame

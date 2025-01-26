@@ -6,6 +6,19 @@ from typing import List, Optional, Tuple
 from .frame_generator import create_blank_frame, resize_and_add_padding
 from .caption_renderer import add_caption_to_frame
 from .text_renderer import drawText
+from .constants import (
+    MediaConstants,
+    FontScale,
+    HorizontalAnchor,
+    VerticalAnchor,
+    FontConstants,
+)
+
+# メディアプロセッサー固有の定数
+class ProcessorConstants:
+    # ランダムカラーの範囲
+    RANDOM_COLOR_MIN = 150
+    RANDOM_COLOR_MAX = 255
 
 def process_media_file(file_path: str, width: int, height: int, padding: int, fps: int,
                       project_name: str, text_ts_info: List[str], total_frame_number: int,
@@ -41,7 +54,7 @@ def process_media_file(file_path: str, width: int, height: int, padding: int, fp
     local_frame_number = 0
     
     ext = os.path.splitext(file_path)[1].lower()
-    if ext in ['.jpg', '.png', '.jpeg']:
+    if ext in MediaConstants.IMAGE_EXTENSIONS:
         img = cv2.imread(file_path)
         if duration is None:
             raise ValueError("Duration is required for image files")
@@ -57,7 +70,7 @@ def process_media_file(file_path: str, width: int, height: int, padding: int, fp
             frames.append(add_caption_img_frame)
             local_frame_number += 1
             
-    elif ext in ['.mp4', '.avi', '.mov']:
+    elif ext in MediaConstants.VIDEO_EXTENSIONS:
         video = cv2.VideoCapture(file_path)
         while video.isOpened():
             ret, frame = video.read()
@@ -100,31 +113,24 @@ def process_empty_directory(width: int, height: int, padding: int, fps: int,
     Returns:
         Tuple[List[np.ndarray], int]: (生成されたフレームのリスト, フレーム数)
     """
-    # フレームリストを初期化
     frames = []
-    # ランダムな色を生成
-    random_color = tuple(random.randint(150, 255) for _ in range(3))
+    random_color = tuple(random.randint(ProcessorConstants.RANDOM_COLOR_MIN, ProcessorConstants.RANDOM_COLOR_MAX) for _ in range(3))
     
-    # 指定されたdurationのフレーム数だけループ
     for local_frame_number in range(duration):
-        # 空のフレームを作成
         blank_frame = create_blank_frame(width, height, padding)
-        # フレームにランダムな色の矩形を描画
         cv2.rectangle(blank_frame, (0, padding), (width, height + padding), random_color, -1)
-        # キャプションを追加
         add_caption_blank_frame = add_caption_to_frame(
             blank_frame, (width, height), fps, project_name,
             text_ts_info, total_frame_number + local_frame_number, cut_num,
-            cut_take, cut_status, cut_staff, 'No File',
+            cut_take, cut_status, cut_staff, MediaConstants.NO_FILE_TEXT,
             local_frame_number, video_index
         )
-        # テキストをフレームの中央に描画
-        drawText('center', 'center', add_caption_blank_frame, 'No File',
-                (width/2, height/2 + padding+40), 2, font_color=(0, 0, 0))
-        # フレームをリストに追加
+        drawText(HorizontalAnchor.CENTER.value, VerticalAnchor.CENTER.value,
+                add_caption_blank_frame, MediaConstants.NO_FILE_TEXT,
+                (width/2, height/2 + padding + 40), FontScale.EXTRA_LARGE,
+                font_color=FontConstants.BLACK_COLOR)
         frames.append(add_caption_blank_frame)
     
-    # フレームリストとフレーム数を返す
     return frames, duration
 
 def setup_video_writer(output_path: str, width: int, height: int, fps: int, padding: int) -> cv2.VideoWriter:
@@ -143,7 +149,7 @@ def setup_video_writer(output_path: str, width: int, height: int, fps: int, padd
     Raises:
         RuntimeError: VideoWriterの初期化に失敗した場合
     """
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fourcc = cv2.VideoWriter_fourcc(*MediaConstants.VIDEO_CODEC)
     out = cv2.VideoWriter(output_path, int(fourcc), fps, (width, height + (padding*2)))
     
     if not out.isOpened():
