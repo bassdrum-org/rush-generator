@@ -114,7 +114,7 @@ def process_empty_directory(width: int, height: int, padding: int, fps: int,
         # キャプションを追加
         add_caption_blank_frame = add_caption_to_frame(
             blank_frame, (width, height), fps, project_name,
-            text_ts_info, total_frame_number, cut_num,
+            text_ts_info, total_frame_number + local_frame_number, cut_num,
             cut_take, cut_status, cut_staff, 'NoFile',
             local_frame_number, video_index
         )
