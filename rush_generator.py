@@ -47,7 +47,7 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
                             print(f'StartProcess>>cut_{video_index} :video')
                         else:
                             print(f'StartProcess>>cut_{video_index} :media')
-                    if file_name != 'No File':
+                        
                         file_path = os.path.join(dir_path, file_name)
                         frames, frame_count = process_media_file(
                             file_path, width, height, padding, fps,
