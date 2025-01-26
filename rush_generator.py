@@ -45,7 +45,7 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     print("-" * 50)
     print(f"合計カット数: {len(cut_num)}")
     total_seconds = sum(int(sec) for sec in cut_length_second)
-    total_frames = sum(int(frame) for frame in cut_length_frame)
+    total_frames = sum((int(sec) * fps + int(frame)) for sec, frame in zip(cut_length_second, cut_length_frame))
     print(f"合計時間: {format_time(total_seconds)} ({total_frames} フレーム)")
     print("-" * 50 + "\n")
     
