@@ -57,11 +57,11 @@ def get_media_file_info(dir_path: str) -> Tuple[str, datetime.datetime]:
 
     Returns:
         Tuple[str, datetime.datetime]: (ファイル名, 更新日時)
-            ファイルが存在しない場合は ('NoFile', 1970-01-01 00:00:00) を返す
+            ファイルが存在しない場合は ('No File', 1970-01-01 00:00:00) を返す
     """
     files = [f for f in os.listdir(dir_path) if f != '.DS_Store']
     if not files:
-        return 'NoFile', datetime.datetime(1970, 1, 1)
+        return 'No File', datetime.datetime(1970, 1, 1)
     
     file = files[0]
     updated_time = os.path.getmtime(os.path.join(dir_path, file))

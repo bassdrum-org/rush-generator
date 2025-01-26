@@ -206,7 +206,7 @@ class TestRushGenerator(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             # 空ディレクトリのケース
             file_name, updated_dt = get_media_file_info(temp_dir)
-            self.assertEqual(file_name, "NoFile")
+            self.assertEqual(file_name, "No File")
             self.assertEqual(updated_dt.year, 1970)
 
             # ファイルがある場合
@@ -250,7 +250,7 @@ class TestRushGenerator(unittest.TestCase):
             frame, resolution, self.fps, project_name,
             text_ts_info, total_frame_number, text_cut_num,
             text_cut_take, cut_status, cut_staff,
-            'NoFile', local_frame_number, video_index
+            'No File', local_frame_number, video_index
         )
         self.assertFalse(np.all(result == 0))
 

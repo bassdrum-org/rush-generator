@@ -62,11 +62,11 @@ def draw_cut_info(frame: np.ndarray, cut_num: str, cut_take: str,
     # テイク番号を描画
     drawText('left', 'center', frame, cut_take, (400, 65), 0.75)
     
-    # カットステータスが存在する場合は描画し、存在しない場合は 'NoFile' を描画
+    # カットステータスが存在する場合は描画し、存在しない場合は 'No File' を描画
     if cut_status is not None:
         drawText('left', 'bottom', frame, cut_status, (400, 100), 0.75)
     else:
-        drawText('left', 'bottom', frame, 'NoFile', (200, 100), 0.75)
+        drawText('left', 'bottom', frame, 'No File', (200, 100), 0.75)
 
 def draw_staff_info(frame: np.ndarray, cut_staff: Optional[str],
                     cut_filedate: str) -> None:
@@ -80,12 +80,12 @@ def draw_staff_info(frame: np.ndarray, cut_staff: Optional[str],
     if cut_staff is not None:
         drawText('left', 'top', frame, cut_staff, (1600, 30), 0.75)
     else:
-        drawText('left', 'top', frame, 'NoFile', (1600, 10), 0.75)
+        drawText('left', 'top', frame, 'No File', (1600, 10), 0.75)
     
-    if cut_filedate != 'NoFile':
+    if cut_filedate != 'No File':
         drawText('left', 'bottom', frame, cut_filedate, (1600, 100), 0.75)
     else:
-        drawText('left', 'bottom', frame, 'NoFile', (1600, 100), 0.75)
+        drawText('left', 'bottom', frame, 'No File', (1600, 100), 0.75)
 
 def add_caption_to_frame(frame: np.ndarray, resolution: Tuple[int, int], fps: int, project_name: str,
                          text_ts_info: List[str], total_frame_number: int, text_cut_num: List[str],

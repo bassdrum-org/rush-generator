@@ -39,7 +39,7 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
                 
                 if os.listdir(dir_path):
                     file_name, updated_dt = get_media_file_info(dir_path)
-                    if file_name != 'NoFile':
+                    if file_name != 'No File':
                         file_ext = os.path.splitext(file_name)[1].lower()
                         if file_ext in ['.jpg', '.png', '.jpeg']:
                             print(f'StartProcess>>cut_{video_index} :image')
@@ -47,7 +47,7 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
                             print(f'StartProcess>>cut_{video_index} :video')
                         else:
                             print(f'StartProcess>>cut_{video_index} :media')
-                    if file_name != 'NoFile':
+                    if file_name != 'No File':
                         file_path = os.path.join(dir_path, file_name)
                         frames, frame_count = process_media_file(
                             file_path, width, height, padding, fps,
