@@ -27,6 +27,28 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     # プロジェクト設定の初期化
     project_name, width, height, fps, cut_num, text_ts_info, cut_status, cut_take, cut_staff, cut_length_second, cut_length_frame = initialize_project_settings(project_csv_path, csv_path)
     
+    # プロジェクト情報の表示
+    print("\nプロジェクト情報:")
+    print("-" * 50)
+    print(f"プロジェクト名: {project_name}")
+    print(f"解像度: {width}x{height}")
+    print(f"フレームレート: {fps}fps")
+    print("-" * 50)
+    
+    # カット情報の表示
+    print("\nカット情報の概要:")
+    print("-" * 50)
+    print(f"{'カット番号':<10}{'尺(秒)':<8}{'尺(F)':<8}{'ステータス':<12}{'テイク':<10}{'担当者'}")
+    print("-" * 50)
+    for i in range(len(cut_num)):
+        print(f"{cut_num[i]:<10}{cut_length_second[i]:<8}{cut_length_frame[i]:<8}{cut_status[i]:<12}{cut_take[i]:<10}{cut_staff[i]}")
+    print("-" * 50)
+    print(f"合計カット数: {len(cut_num)}")
+    total_seconds = sum(int(sec) for sec in cut_length_second)
+    total_frames = sum(int(frame) for frame in cut_length_frame)
+    print(f"合計時間: {format_time(total_seconds)} ({total_frames} フレーム)")
+    print("-" * 50 + "\n")
+    
     # 出力動画の設定
     out = setup_video_writer(output_path, width, height, fps, padding)
     
