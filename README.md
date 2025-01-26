@@ -111,6 +111,8 @@ python rush_generator.py
 - 右下: ファイル更新日
 - 下部中央: タイムコード、タイムシート、フレーム番号
 
+![rush_202501261504](https://github.com/user-attachments/assets/bd47faff-7a91-49ae-ad51-ec1f3fe52075)
+
 ## テストとカバレッジ
 
 本プロジェクトは包括的なユニットテストを実装しています。以下の機能のテストが含まれています：
