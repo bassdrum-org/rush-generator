@@ -33,7 +33,6 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     # 素材ディレクトリの処理
     total_frame_number = 0
     assets_path = os.path.join(current_path, 'videos')
-    dirs = sorted([f for f in os.listdir(assets_path) if os.path.isdir(os.path.join(assets_path, f))])
     
     # 総フレーム数を計算
     total_frames = sum((int(cut_length_second[i]) * fps + int(cut_length_frame[i])) for i in range(len(cut_num)))
@@ -45,70 +44,66 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     processed_frames = 0
     
     for video_index, cut in enumerate(cut_num):
-        found_cut = False
-        for dir_name in dirs:
-            if cut == dir_name:
-                found_cut = True
-                dir_path = os.path.join(assets_path, dir_name)
-                duration = (int(cut_length_second[video_index]) * fps) + int(cut_length_frame[video_index])
-                
-                # カット情報の表示
-                cut_info = f"\nProcessing Cut: {cut} ({video_index + 1}/{len(cut_num)})"
-                cut_info += f"\nStatus: {cut_status[video_index]}"
-                cut_info += f"\nTake: {cut_take[video_index]}"
-                cut_info += f"\nStaff: {cut_staff[video_index]}"
-                cut_info += f"\nDuration: {format_time(duration/fps)}"
-                print(cut_info)
-                
-                if os.listdir(dir_path):
-                    file_name, updated_dt = get_media_file_info(dir_path)
-                    if file_name != 'No File':
-                        file_ext = os.path.splitext(file_name)[1].lower()
-                        media_type = 'image' if file_ext in ['.jpg', '.png', '.jpeg'] else 'video' if file_ext in ['.mp4', '.avi', '.mov'] else 'media'
-                        print(f'Media Type: {media_type.upper()}')
-                        print(f'File: {file_name}')
-                        print(f'Last Updated: {updated_dt.strftime("%Y-%m-%d %H:%M:%S")}')
+        dir_path = os.path.join(assets_path, cut)
+        if os.path.isdir(dir_path):
+            duration = (int(cut_length_second[video_index]) * fps) + int(cut_length_frame[video_index])
+            
+            # カット情報の表示
+            cut_info = f"\nProcessing Cut: {cut} ({video_index + 1}/{len(cut_num)})"
+            cut_info += f"\nStatus: {cut_status[video_index]}"
+            cut_info += f"\nTake: {cut_take[video_index]}"
+            cut_info += f"\nStaff: {cut_staff[video_index]}"
+            cut_info += f"\nDuration: {format_time(duration/fps)}"
+            print(cut_info)
+            
+            if os.listdir(dir_path):
+                file_name, updated_dt = get_media_file_info(dir_path)
+                if file_name != 'No File':
+                    file_ext = os.path.splitext(file_name)[1].lower()
+                    media_type = 'image' if file_ext in ['.jpg', '.png', '.jpeg'] else 'video' if file_ext in ['.mp4', '.avi', '.mov'] else 'media'
+                    print(f'Media Type: {media_type.upper()}')
+                    print(f'File: {file_name}')
+                    print(f'Last Updated: {updated_dt.strftime("%Y-%m-%d %H:%M:%S")}')
                         
-                        file_path = os.path.join(dir_path, file_name)
-                        frames, frame_count = process_media_file(
-                            file_path, width, height, padding, fps,
-                            project_name, text_ts_info, total_frame_number,
-                            cut_num, cut_take, cut_status, cut_staff,
-                            updated_dt.strftime('%Y%m%d'), video_index,
-                            duration if file_name.lower().endswith(('.jpg', '.png', '.jpeg')) else None
-                        )
-                else:
-                    print(f'Media Type: BLANK')
-                    frames, frame_count = process_empty_directory(
-                        width, height, padding, fps, project_name,
-                        text_ts_info, total_frame_number, cut_num,
-                        cut_take, cut_status, cut_staff, duration,
-                        video_index
+                    file_path = os.path.join(dir_path, file_name)
+                    frames, frame_count = process_media_file(
+                        file_path, width, height, padding, fps,
+                        project_name, text_ts_info, total_frame_number,
+                        cut_num, cut_take, cut_status, cut_staff,
+                        updated_dt.strftime('%Y%m%d'), video_index,
+                        duration if file_name.lower().endswith(('.jpg', '.png', '.jpeg')) else None
                     )
+            else:
+                print(f'Media Type: BLANK')
+                frames, frame_count = process_empty_directory(
+                    width, height, padding, fps, project_name,
+                    text_ts_info, total_frame_number, cut_num,
+                    cut_take, cut_status, cut_staff, duration,
+                    video_index
+                )
                 
-                # フレーム処理とプログレス更新
-                frame_progress = tqdm(frames, total=frame_count, unit='frames', desc='Cut Progress', leave=False)
-                for frame in frame_progress:
-                    out.write(frame)
-                    processed_frames += 1
-                    progress_bar.update(1)
-                    
-                    # 処理速度と残り時間の計算
-                    elapsed_time = time.time() - start_time
-                    fps_rate = processed_frames / elapsed_time
-                    remaining_frames = total_frames - processed_frames
-                    eta = remaining_frames / fps_rate if fps_rate > 0 else 0
-                    
-                    # ステータス行の更新
-                    progress_bar.set_postfix({
-                        'FPS': f'{fps_rate:.2f}',
-                        'ETA': format_time(eta)
-                    })
+            # フレーム処理とプログレス更新
+            frame_progress = tqdm(frames, total=frame_count, unit='frames', desc='Cut Progress', leave=False)
+            for frame in frame_progress:
+                out.write(frame)
+                processed_frames += 1
+                progress_bar.update(1)
                 
-                total_frame_number += frame_count
-                print(f'Cut {cut} completed\n')
+                # 処理速度と残り時間の計算
+                elapsed_time = time.time() - start_time
+                fps_rate = processed_frames / elapsed_time
+                remaining_frames = total_frames - processed_frames
+                eta = remaining_frames / fps_rate if fps_rate > 0 else 0
                 
-        if not found_cut:
+                # ステータス行の更新
+                progress_bar.set_postfix({
+                    'FPS': f'{fps_rate:.2f}',
+                    'ETA': format_time(eta)
+                })
+            
+            total_frame_number += frame_count
+            print(f'Cut {cut} completed\n')
+        else:
             print(f"\nWarning: Cut directory {cut} not found")
     
     progress_bar.close()
