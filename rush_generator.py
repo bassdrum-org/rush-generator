@@ -2,11 +2,19 @@ import os
 import cv2
 import datetime
 import time
+from tqdm import tqdm
 from src.file_handler import initialize_project_settings, get_media_file_info
 from src.media_processor import process_media_file, process_empty_directory, setup_video_writer
 
+def format_time(seconds):
+    """秒数を時間:分:秒の形式に変換する"""
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    seconds = int(seconds % 60)
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
 def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, csv_path: str,
-                                   output_path: str, padding: int):
+                                 output_path: str, padding: int):
     """複数の動画/画像ファイルを結合し、フレーム番号とキャプションを追加する
 
     Args:
@@ -26,8 +34,15 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     total_frame_number = 0
     assets_path = os.path.join(current_path, 'videos')
     dirs = sorted([f for f in os.listdir(assets_path) if os.path.isdir(os.path.join(assets_path, f))])
-    print(dirs)
-    print(cut_num)
+    
+    # 総フレーム数を計算
+    total_frames = sum((int(cut_length_second[i]) * fps + int(cut_length_frame[i])) for i in range(len(cut_num)))
+    
+    # プログレスバーの初期化
+    progress_bar = tqdm(total=total_frames, unit='frames', desc='Total Progress')
+    
+    start_time = time.time()
+    processed_frames = 0
     
     for video_index, cut in enumerate(cut_num):
         found_cut = False
@@ -37,16 +52,22 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
                 dir_path = os.path.join(assets_path, dir_name)
                 duration = (int(cut_length_second[video_index]) * fps) + int(cut_length_frame[video_index])
                 
+                # カット情報の表示
+                cut_info = f"\nProcessing Cut: {cut} ({video_index + 1}/{len(cut_num)})"
+                cut_info += f"\nStatus: {cut_status[video_index]}"
+                cut_info += f"\nTake: {cut_take[video_index]}"
+                cut_info += f"\nStaff: {cut_staff[video_index]}"
+                cut_info += f"\nDuration: {format_time(duration/fps)}"
+                print(cut_info)
+                
                 if os.listdir(dir_path):
                     file_name, updated_dt = get_media_file_info(dir_path)
                     if file_name != 'No File':
                         file_ext = os.path.splitext(file_name)[1].lower()
-                        if file_ext in ['.jpg', '.png', '.jpeg']:
-                            print(f'StartProcess>>cut_{video_index} :image')
-                        elif file_ext in ['.mp4', '.avi', '.mov']:
-                            print(f'StartProcess>>cut_{video_index} :video')
-                        else:
-                            print(f'StartProcess>>cut_{video_index} :media')
+                        media_type = 'image' if file_ext in ['.jpg', '.png', '.jpeg'] else 'video' if file_ext in ['.mp4', '.avi', '.mov'] else 'media'
+                        print(f'Media Type: {media_type.upper()}')
+                        print(f'File: {file_name}')
+                        print(f'Last Updated: {updated_dt.strftime("%Y-%m-%d %H:%M:%S")}')
                         
                         file_path = os.path.join(dir_path, file_name)
                         frames, frame_count = process_media_file(
@@ -57,7 +78,7 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
                             duration if file_name.lower().endswith(('.jpg', '.png', '.jpeg')) else None
                         )
                 else:
-                    print(f'StartProcess>>cut_{video_index} :blank')
+                    print(f'Media Type: BLANK')
                     frames, frame_count = process_empty_directory(
                         width, height, padding, fps, project_name,
                         text_ts_info, total_frame_number, cut_num,
@@ -65,17 +86,40 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
                         video_index
                     )
                 
-                for frame in frames:
+                # フレーム処理とプログレス更新
+                frame_progress = tqdm(frames, total=frame_count, unit='frames', desc='Cut Progress', leave=False)
+                for frame in frame_progress:
                     out.write(frame)
+                    processed_frames += 1
+                    progress_bar.update(1)
+                    
+                    # 処理速度と残り時間の計算
+                    elapsed_time = time.time() - start_time
+                    fps_rate = processed_frames / elapsed_time
+                    remaining_frames = total_frames - processed_frames
+                    eta = remaining_frames / fps_rate if fps_rate > 0 else 0
+                    
+                    # ステータス行の更新
+                    progress_bar.set_postfix({
+                        'FPS': f'{fps_rate:.2f}',
+                        'ETA': format_time(eta)
+                    })
+                
                 total_frame_number += frame_count
-                print('EndProcess')
+                print(f'Cut {cut} completed\n')
                 
         if not found_cut:
-            print("not found cut directory")
+            print(f"\nWarning: Cut directory {cut} not found")
     
+    progress_bar.close()
     out.release()
     cv2.destroyAllWindows()
-    print('Done!')
+    
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"\nExport completed!")
+    print(f"Total processing time: {format_time(elapsed_time)}")
+    print(f"Average processing speed: {processed_frames / elapsed_time:.2f} FPS")
 
 if __name__ == "__main__":
     current = os.path.dirname(__file__)
@@ -88,11 +132,8 @@ if __name__ == "__main__":
     d = now.strftime('%Y%m%d%H%M')
     output_video_path = os.path.join(current, 'out', f'rush_{d}.mp4')
     
-    start_time = time.time()
-    print("Start")
+    print("\nRush Generator Starting...")
+    print(f"Output: {output_video_path}")
+    print("-" * 50)
     
     merge_videos_with_frame_numbers(current, csv_path_project, csv_path_cut, output_video_path, 100)
-    
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    print(f"EndExport. Processing time{elapsed_time:.2f}seconds")
