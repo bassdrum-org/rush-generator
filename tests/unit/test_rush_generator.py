@@ -5,20 +5,42 @@ import os
 import tempfile
 import csv
 from datetime import datetime
-from rush_generator import (
-    drawText,
+import sys
+from pathlib import Path
+
+# プロジェクトルートへのパスを追加
+project_root = str(Path(__file__).parent.parent.parent)
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
+from src.frame_generator import (
     create_blank_frame,
-    resize_and_add_padding,
-    add_caption_to_frame,
-    merge_videos_with_frame_numbers,
+    resize_and_add_padding
+)
+from src.media_processor import (
+    process_media_file
+)
+from src.text_renderer import (
+    drawText
+)
+from src.timecode import (
     calculate_timecode,
     format_timecode,
-    calculate_timestamp,
-    calculate_text_position,
+    calculate_timestamp
+)
+from src.caption_renderer import (
+    add_caption_to_frame
+)
+from src.file_handler import (
     read_project_info,
     read_cut_info,
-    get_media_file_info,
-    process_media_file
+    get_media_file_info
+)
+from src.text_renderer import (
+    calculate_text_position
+)
+from src.rush_generator import (
+    merge_videos_with_frame_numbers
 )
 
 class TestRushGenerator(unittest.TestCase):
