@@ -169,15 +169,25 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     print(f"Average processing speed: {processed_frames / elapsed_time:.2f} FPS")
 
 if __name__ == "__main__":
-    current = os.path.dirname(__file__)
-    csv_path_project = os.path.join(current, "project_info.csv")
-    csv_path_cut = os.path.join(current, "cut_info.csv")
+    # プロジェクトのルートディレクトリを取得
+    current = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     
+    # 設定ファイルのパス
+    csv_path_project = os.path.join(current, "config", "project", "project_info.csv")
+    csv_path_cut = os.path.join(current, "config", "cut", "cut_info.csv")
+    
+    # 出力ディレクトリの作成
+    output_dir = os.path.join(current, 'out')
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # タイムスタンプの設定
     t_delta = datetime.timedelta(hours=9)
     JST = datetime.timezone(t_delta, 'JST')
     now = datetime.datetime.now(JST)
     d = now.strftime('%Y%m%d%H%M')
-    output_video_path = os.path.join(current, 'out', f'rush_{d}.mp4')
+    
+    # 出力ファイルパス
+    output_video_path = os.path.join(output_dir, f'rush_{d}.mp4')
     
     print("\nRush Generator Starting...")
     print(f"Output: {output_video_path}")
