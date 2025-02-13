@@ -34,6 +34,7 @@ pip install -r requirements-dev.txt
 project/
 ├── project_info.csv     # プロジェクト設定ファイル
 ├── cut_info.csv         # カット情報ファイル
+├── videos/            # ビデオファイル
 │   ├── A0001/         # カット番号のフォルダ
 │   │   └── A0001.mov  # 動画ファイル
 │   ├── A0002/
@@ -41,8 +42,6 @@ project/
 │   └── ...
 └── out/               # 出力フォルダ
 ```
-
-実行時に引数を省略した場合はカレントディレクトリのproject_info.csvとcut_info.csv、videos/が参照されます。
 
 注: プロジェクトには基本的なサンプルファイル(CSVファイル2つとサンプルビデオ)が含まれています。
 
@@ -98,6 +97,11 @@ python rush_generator.py
 python rush_generator.py --videos-dir path/to/videos \
                         --project-csv path/to/project_info.csv \
                         --cut-csv path/to/cut_info.csv
+
+# videosディレクトリやCSVのパスを指定した場合のサンプル
+python rush_generator.py --videos-dir videos \
+                        --project-csv project_info.csv \
+                        --cut-csv cut_info.csv
 ```
 
 ### ディレクトリ構造
