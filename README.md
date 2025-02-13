@@ -34,12 +34,13 @@ pip install -r requirements-dev.txt
 project/
 ├── project_info.csv     # プロジェクト設定ファイル
 ├── cut_info.csv         # カット情報ファイル
-├── videos/             # 素材フォルダ
-│   ├── A0001/         # カット番号のフォルダ
-│   │   └── A0001.mov  # 動画ファイル
-│   ├── A0002/
-│   │   └── A0002.png  # 画像ファイル
-│   └── ...
+└── samples/            # 素材フォルダの例
+    └── videos/        # ビデオディレクトリ
+        ├── A0001/    # カット番号のフォルダ
+        │   └── A0001.mov  # 動画ファイル
+        ├── A0002/
+        │   └── A0002.png  # 画像ファイル
+        └── ...
 └── out/               # 出力フォルダ
 ```
 
@@ -78,7 +79,7 @@ A0001,5,0,OK,Take1,John
 A0002,3,15,NG,Take2,Mike
 ```
 
-- cut_number: カット番号（videosフォルダ内のフォルダ名と一致させる）
+- cut_number: カット番号（ビデオディレクトリ内のフォルダ名と一致させる）
 - seconds: カットの長さ（秒）
 - frames: 追加フレーム数
 - status: カットのステータス（OK/NG等）
@@ -91,10 +92,21 @@ A0002,3,15,NG,Take2,Mike
 # デフォルトの videos ディレクトリを使用する場合
 python rush_generator.py
 
-# 別のビデオディレクトリを指定する場合（絶対パスまたは相対パス）
-python rush_generator.py --videos-dir /path/to/videos  # 絶対パス
-python rush_generator.py --videos-dir ./my_videos      # 相対パス
+# 別のビデオディレクトリを指定する場合
+python rush_generator.py --videos-dir samples/videos  # samples/videos/A0001/A0001.mov を処理
 ```
+
+### ディレクトリ構造
+
+指定したビデオディレクトリ内に、各カット番号のフォルダを配置します：
+
+```
+指定したディレクトリ/
+└── A0001/              # カット番号のフォルダ
+    └── A0001.mov      # 動画ファイル
+```
+
+各カットフォルダ内には、そのカットの動画ファイルまたは画像ファイルを配置します。
 
 ### コマンドラインオプション
 
@@ -106,7 +118,7 @@ python rush_generator.py --videos-dir ./my_videos      # 相対パス
 実行すると、以下の処理が行われます：
 
 1. project_info.csvとcut_info.csvから設定を読み込み
-2. videosフォルダ内の各カットフォルダを処理
+2. 指定されたビデオディレクトリ内の各カットフォルダを処理
 3. 動画/画像ファイルにキャプション情報を追加
 4. 全てのカットを結合
 5. outフォルダに結果を出力（ファイル名：rush_YYYYMMDDHHMM.mp4）
