@@ -91,9 +91,17 @@ A0002,3,15,NG,Take2,Mike
 # デフォルトの videos ディレクトリを使用する場合
 python rush_generator.py
 
-# 別のビデオディレクトリを指定する場合
-python rush_generator.py --videos-dir /path/to/videos
+# 別のビデオディレクトリを指定する場合（絶対パスまたは相対パス）
+python rush_generator.py --videos-dir /path/to/videos  # 絶対パス
+python rush_generator.py --videos-dir ./my_videos      # 相対パス
 ```
+
+### コマンドラインオプション
+
+- `--videos-dir`: ビデオファイルが格納されているディレクトリのパスを指定します
+  * デフォルト値: `videos`（カレントディレクトリ内の'videos'フォルダ）
+  * 絶対パスまたは相対パスを指定可能
+  * 指定したディレクトリが存在しない場合はエラーが表示されます
 
 実行すると、以下の処理が行われます：
 
