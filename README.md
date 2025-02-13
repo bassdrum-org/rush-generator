@@ -153,43 +153,6 @@ python rush_generator.py --videos-dir videos \
 
 ![rush_202501261504](https://github.com/user-attachments/assets/bd47faff-7a91-49ae-ad51-ec1f3fe52075)
 
-## テストとカバレッジ
-
-本プロジェクトは包括的なユニットテストを実装しています。以下の機能のテストが含まれています:
-
-- タイムコード計算と表示
-- テキスト描画位置の計算
-- フレーム生成と加工
-- CSVファイル読み込み
-- メディアファイル処理
-- 動画結合処理
-
-### テストの実行
-
-```bash
-# 全てのテストを実行
-python -m unittest test_rush_generator.py
-
-# 詳細な出力でテストを実行
-python -m unittest -v test_rush_generator.py
-
-# カバレッジレポートの生成と表示
-coverage run -m unittest test_rush_generator.py
-coverage report
-coverage html  # HTMLレポートの生成
-```
-
-テストは以下の項目をカバーしています:
-
-- 正常系テスト:
-  * 各関数の基本的な機能
-  * 境界値の処理
-  * 異なる入力パターン
-- 異常系テスト:
-  * エラー処理
-  * 無効な入力値の処理
-  * 空のディレクトリやファイルの処理
-
 ## 注意事項
 
 - 動画ファイルは.mp4, .avi, .movに対応
