@@ -60,7 +60,7 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     
     # 素材ディレクトリの処理
     total_frame_number = 0
-    assets_path = os.path.join(current_path, 'videos')
+    assets_path = current_path
     
     # 総フレーム数を計算
     total_frames = sum((int(cut_length_second[i]) * fps + int(cut_length_frame[i])) for i in range(len(cut_num)))
