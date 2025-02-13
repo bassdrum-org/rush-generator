@@ -88,8 +88,29 @@ A0002,3,15,NG,Take2,Mike
 ## 実行方法
 
 ```bash
-python rush_generator.py
+# デフォルトの設定ファイルを使用する場合
+python rush_generator.py --videos-dir samples/videos
+
+# CSVファイルのパスを指定する場合
+python rush_generator.py --videos-dir samples/videos \
+                        --project-csv /path/to/project_info.csv \
+                        --cut-csv /path/to/cut_info.csv
 ```
+
+### コマンドラインオプション
+
+- `--videos-dir`: ビデオファイルが格納されているディレクトリのパスを指定します
+  * デフォルト値: `videos`（カレントディレクトリ内の'videos'フォルダ）
+  * 絶対パスまたは相対パスを指定可能
+  * 指定したディレクトリが存在しない場合はエラーが表示されます
+- `--project-csv`: プロジェクト情報CSVファイルのパスを指定します
+  * デフォルト値: `project_info.csv`（カレントディレクトリ内のファイル）
+  * 絶対パスまたは相対パスを指定可能
+  * 指定したファイルが存在しない場合はエラーが表示されます
+- `--cut-csv`: カット情報CSVファイルのパスを指定します
+  * デフォルト値: `cut_info.csv`（カレントディレクトリ内のファイル）
+  * 絶対パスまたは相対パスを指定可能
+  * 指定したファイルが存在しない場合はエラーが表示されます
 
 実行すると、以下の処理が行われます：
 
