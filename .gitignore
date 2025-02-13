@@ -1,7 +1,5 @@
 out/*
 !out/.gitkeep
-videos/*
-!videos/.gitkeep
 
 # Python
 __pycache__/
