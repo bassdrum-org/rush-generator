@@ -274,12 +274,13 @@ class TestRushGenerator(unittest.TestCase):
             # 出力ファイルパス
             output_path = os.path.join(temp_dir, "output.mp4")
 
-            # videosディレクトリの作成
-            os.makedirs(os.path.join(temp_dir, "videos"))
+            # カスタムビデオディレクトリの作成
+            videos_dir = os.path.join(temp_dir, "custom_videos")
+            os.makedirs(videos_dir)
 
             # 関数の実行
             merge_videos_with_frame_numbers(
-                temp_dir,
+                videos_dir,
                 project_csv_path,
                 cut_csv_path,
                 output_path,
@@ -357,9 +358,9 @@ class TestRushGenerator(unittest.TestCase):
                 writer.writerow(["A0001", "1", "0", "OK", "Take1", "Staff A"])
 
             # テスト用の動画ディレクトリとファイルを作成
-            videos_dir = os.path.join(temp_dir, "videos", "A0001")
-            os.makedirs(videos_dir)
-            img_path = os.path.join(videos_dir, "test.png")
+            videos_dir = os.path.join(temp_dir, "custom_videos")
+            os.makedirs(os.path.join(videos_dir, "A0001"))
+            img_path = os.path.join(videos_dir, "A0001", "test.png")
             img = np.zeros((720, 1280, 3), dtype=np.uint8)
             cv2.imwrite(img_path, img)
 
@@ -368,7 +369,7 @@ class TestRushGenerator(unittest.TestCase):
 
             # 関数の実行
             merge_videos_with_frame_numbers(
-                temp_dir,
+                videos_dir,
                 project_csv_path,
                 cut_csv_path,
                 output_path,
@@ -421,15 +422,15 @@ class TestRushGenerator(unittest.TestCase):
                 writer.writerow(["A0001", "1", "0", "OK", "Take1", "Staff A"])
 
             # 空のディレクトリを作成
-            videos_dir = os.path.join(temp_dir, "videos", "A0001")
-            os.makedirs(videos_dir)
+            videos_dir = os.path.join(temp_dir, "custom_videos")
+            os.makedirs(os.path.join(videos_dir, "A0001"))
 
             # 出力ファイルパス
             output_path = os.path.join(temp_dir, "output.mp4")
 
             # 関数の実行
             merge_videos_with_frame_numbers(
-                temp_dir,
+                videos_dir,
                 project_csv_path,
                 cut_csv_path,
                 output_path,
@@ -439,6 +440,21 @@ class TestRushGenerator(unittest.TestCase):
             # 出力ファイルが作成されたことを確認
             self.assertTrue(os.path.exists(output_path))
             self.assertTrue(os.path.getsize(output_path) > 0)
+
+    def test_merge_videos_with_frame_numbers_invalid_directory(self):
+        """merge_videos_with_frame_numbers関数の無効なディレクトリケースのテスト"""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            invalid_dir = os.path.join(temp_dir, "nonexistent")
+            with self.assertRaises(ValueError) as context:
+                merge_videos_with_frame_numbers(
+                    invalid_dir,
+                    "project_info.csv",
+                    "cut_info.csv",
+                    "output.mp4",
+                    100
+                )
+            self.assertEqual(str(context.exception), f"Video directory not found: {invalid_dir}")
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -18,12 +18,18 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     """複数の動画/画像ファイルを結合し、フレーム番号とキャプションを追加する
 
     Args:
-        current_path (str): 現在のディレクトリパス
+        current_path (str): ビデオディレクトリのパス（絶対パスまたは相対パス）
         project_csv_path (str): プロジェクト情報CSVファイルのパス
         csv_path (str): カット情報CSVファイルのパス
         output_path (str): 出力動画ファイルのパス
         padding (int): パディングのサイズ
+
+    Raises:
+        ValueError: ビデオディレクトリが存在しない場合
     """
+    # Validate video directory exists
+    if not os.path.isdir(current_path):
+        raise ValueError(f"Video directory not found: {current_path}")
     # プロジェクト設定の初期化
     project_name, width, height, fps, cut_num, text_ts_info, cut_status, cut_take, cut_staff, cut_length_second, cut_length_frame = initialize_project_settings(project_csv_path, csv_path)
     
@@ -54,7 +60,7 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     
     # 素材ディレクトリの処理
     total_frame_number = 0
-    assets_path = os.path.join(current_path, 'videos')
+    assets_path = current_path
     
     # 総フレーム数を計算
     total_frames = sum((int(cut_length_second[i]) * fps + int(cut_length_frame[i])) for i in range(len(cut_num)))
@@ -169,6 +175,13 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     print(f"Average processing speed: {processed_frames / elapsed_time:.2f} FPS")
 
 if __name__ == "__main__":
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Rush Generator - Generate preview videos with timecode and metadata')
+    parser.add_argument('--videos-dir', type=str, default='videos',
+                      help='Directory containing the video files (default: videos)')
+    args = parser.parse_args()
+    
     current = os.path.dirname(__file__)
     csv_path_project = os.path.join(current, "project_info.csv")
     csv_path_cut = os.path.join(current, "cut_info.csv")
@@ -180,7 +193,10 @@ if __name__ == "__main__":
     output_video_path = os.path.join(current, 'out', f'rush_{d}.mp4')
     
     print("\nRush Generator Starting...")
+    # Convert relative path to absolute if needed
+    videos_dir = os.path.abspath(args.videos_dir)
+    print(f"Videos Directory: {videos_dir}")
     print(f"Output: {output_video_path}")
     print("-" * 50)
     
-    merge_videos_with_frame_numbers(current, csv_path_project, csv_path_cut, output_video_path, 100)
+    merge_videos_with_frame_numbers(videos_dir, csv_path_project, csv_path_cut, output_video_path, 100)
