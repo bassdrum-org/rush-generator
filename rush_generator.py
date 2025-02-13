@@ -169,6 +169,13 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     print(f"Average processing speed: {processed_frames / elapsed_time:.2f} FPS")
 
 if __name__ == "__main__":
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Rush Generator - Generate preview videos with timecode and metadata')
+    parser.add_argument('--videos-dir', type=str, default='videos',
+                      help='Directory containing the video files (default: videos)')
+    args = parser.parse_args()
+    
     current = os.path.dirname(__file__)
     csv_path_project = os.path.join(current, "project_info.csv")
     csv_path_cut = os.path.join(current, "cut_info.csv")
@@ -180,7 +187,8 @@ if __name__ == "__main__":
     output_video_path = os.path.join(current, 'out', f'rush_{d}.mp4')
     
     print("\nRush Generator Starting...")
+    print(f"Videos Directory: {args.videos_dir}")
     print(f"Output: {output_video_path}")
     print("-" * 50)
     
-    merge_videos_with_frame_numbers(current, csv_path_project, csv_path_cut, output_video_path, 100)
+    merge_videos_with_frame_numbers(args.videos_dir, csv_path_project, csv_path_cut, output_video_path, 100)

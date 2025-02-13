@@ -88,7 +88,11 @@ A0002,3,15,NG,Take2,Mike
 ## 実行方法
 
 ```bash
+# デフォルトの videos ディレクトリを使用する場合
 python rush_generator.py
+
+# 別のビデオディレクトリを指定する場合
+python rush_generator.py --videos-dir /path/to/videos
 ```
 
 実行すると、以下の処理が行われます：
