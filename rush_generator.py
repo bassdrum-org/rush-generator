@@ -18,12 +18,22 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     """複数の動画/画像ファイルを結合し、フレーム番号とキャプションを追加する
 
     Args:
-        current_path (str): 現在のディレクトリパス
+        current_path (str): ビデオディレクトリのパス（絶対パスまたは相対パス）
         project_csv_path (str): プロジェクト情報CSVファイルのパス
         csv_path (str): カット情報CSVファイルのパス
         output_path (str): 出力動画ファイルのパス
         padding (int): パディングのサイズ
+
+    Raises:
+        ValueError: ビデオディレクトリまたはCSVファイルが存在しない場合
     """
+    # Validate paths
+    if not os.path.isdir(current_path):
+        raise ValueError(f"Video directory not found: {current_path}")
+    if not os.path.isfile(project_csv_path):
+        raise ValueError(f"Project info CSV file not found: {project_csv_path}")
+    if not os.path.isfile(csv_path):
+        raise ValueError(f"Cut info CSV file not found: {csv_path}")
     # プロジェクト設定の初期化
     project_name, width, height, fps, cut_num, text_ts_info, cut_status, cut_take, cut_staff, cut_length_second, cut_length_frame = initialize_project_settings(project_csv_path, csv_path)
     
@@ -169,9 +179,29 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     print(f"Average processing speed: {processed_frames / elapsed_time:.2f} FPS")
 
 if __name__ == "__main__":
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Rush Generator - Generate preview videos with timecode and metadata')
+    parser.add_argument('--videos-dir', type=str, default='videos',
+                      help='Directory containing the video files (default: videos)')
+    parser.add_argument('--project-csv', type=str, default='project_info.csv',
+                      help='Path to project info CSV file (default: project_info.csv)')
+    parser.add_argument('--cut-csv', type=str, default='cut_info.csv',
+                      help='Path to cut info CSV file (default: cut_info.csv)')
+    args = parser.parse_args()
+    
     current = os.path.dirname(__file__)
-    csv_path_project = os.path.join(current, "project_info.csv")
-    csv_path_cut = os.path.join(current, "cut_info.csv")
+    
+    # Convert relative paths to absolute if needed
+    videos_dir = os.path.abspath(args.videos_dir)
+    project_csv_path = os.path.abspath(args.project_csv)
+    cut_csv_path = os.path.abspath(args.cut_csv)
+    
+    # Validate that CSV files exist
+    if not os.path.isfile(project_csv_path):
+        raise ValueError(f"Project info CSV file not found: {project_csv_path}")
+    if not os.path.isfile(cut_csv_path):
+        raise ValueError(f"Cut info CSV file not found: {cut_csv_path}")
     
     t_delta = datetime.timedelta(hours=9)
     JST = datetime.timezone(t_delta, 'JST')
@@ -180,7 +210,10 @@ if __name__ == "__main__":
     output_video_path = os.path.join(current, 'out', f'rush_{d}.mp4')
     
     print("\nRush Generator Starting...")
+    print(f"Videos Directory: {videos_dir}")
+    print(f"Project Info CSV: {project_csv_path}")
+    print(f"Cut Info CSV: {cut_csv_path}")
     print(f"Output: {output_video_path}")
     print("-" * 50)
     
-    merge_videos_with_frame_numbers(current, csv_path_project, csv_path_cut, output_video_path, 100)
+    merge_videos_with_frame_numbers(videos_dir, project_csv_path, cut_csv_path, output_video_path, 100)
