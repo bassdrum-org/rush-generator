@@ -8,7 +8,7 @@
 - タイムコード、タイムシート、フレーム番号の表示
 - プロジェクト情報とカット情報の表示
 - スタッフ情報の表示
-- 動画が存在しないカットの自動補完(カラーバーの生成)
+- 動画が存在しないカットの自動補完
 
 ## 必要な環境
 
@@ -130,7 +130,7 @@ python rush_generator.py --videos-dir path/to/videos \
 実行すると、以下の処理が行われます:
 
 1. project_info.csvとcut_info.csvから設定を読み込み
-2. videosフォルダ内の各カットフォルダを処理
+2. 指定されたビデオディレクトリ内の各カットフォルダを処理
 3. 動画/画像ファイルにキャプション情報を追加
 4. 全てのカットを結合
 5. outフォルダに結果を出力(ファイル名:rush_YYYYMMDDHHMM.mp4)
@@ -146,6 +146,8 @@ python rush_generator.py --videos-dir path/to/videos \
 - 右上: スタッフ情報
 - 右下: ファイル更新日
 - 下部中央: タイムコード、タイムシート、フレーム番号
+
+![rush_202501261504](https://github.com/user-attachments/assets/bd47faff-7a91-49ae-ad51-ec1f3fe52075)
 
 ## テストとカバレッジ
 
