@@ -96,12 +96,14 @@ python rush_generator.py
 # ビデオディレクトリとCSVファイルのパスを指定する場合
 python rush_generator.py --videos-dir path/to/videos \
                         --project-csv path/to/project_info.csv \
-                        --cut-csv path/to/cut_info.csv
+                        --cut-csv path/to/cut_info.csv \
+                        --output-dir path/to/output
 
-# videosディレクトリやCSVのパスを指定した場合のサンプル
+# videosディレクトリやCSVのパス、出力ディレクトリを指定した場合のサンプル
 python rush_generator.py --videos-dir videos \
                         --project-csv project_info.csv \
-                        --cut-csv cut_info.csv
+                        --cut-csv cut_info.csv \
+                        --output-dir custom_output
 ```
 
 ### ディレクトリ構造
