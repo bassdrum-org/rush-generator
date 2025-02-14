@@ -184,6 +184,8 @@ if __name__ == "__main__":
                       help='Path to project info CSV file (default: project_info.csv)')
     parser.add_argument('--cut-csv', type=str, default='cut_info.csv',
                       help='Path to cut info CSV file (default: cut_info.csv)')
+    parser.add_argument('--output-dir', type=str, default='out',
+                      help='Directory for output files (default: out)')
     args = parser.parse_args()
     
     current = os.path.dirname(__file__)
@@ -204,7 +206,7 @@ if __name__ == "__main__":
     csv_path_cut = os.path.join(current, "config", "cut", "cut_info.csv")
     
     # 出力ディレクトリの作成
-    output_dir = os.path.join(current, 'out')
+    output_dir = os.path.abspath(args.output_dir)
     os.makedirs(output_dir, exist_ok=True)
     
     # タイムスタンプの設定
