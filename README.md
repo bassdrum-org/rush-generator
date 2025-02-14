@@ -96,12 +96,14 @@ python rush_generator.py
 # ビデオディレクトリとCSVファイルのパスを指定する場合
 python rush_generator.py --videos-dir path/to/videos \
                         --project-csv path/to/project_info.csv \
-                        --cut-csv path/to/cut_info.csv
+                        --cut-csv path/to/cut_info.csv \
+                        --output-dir path/to/output
 
-# videosディレクトリやCSVのパスを指定した場合のサンプル
+# videosディレクトリやCSVのパス、出力ディレクトリを指定した場合のサンプル
 python rush_generator.py --videos-dir videos \
                         --project-csv project_info.csv \
-                        --cut-csv cut_info.csv
+                        --cut-csv cut_info.csv \
+                        --output-dir custom_output
 ```
 
 ### ディレクトリ構造
@@ -130,6 +132,10 @@ python rush_generator.py --videos-dir videos \
   * デフォルト値: `cut_info.csv`(カレントディレクトリ内のファイル)
   * 絶対パスまたは相対パスを指定可能
   * 指定したファイルが存在しない場合はエラーが表示されます
+- `--output-dir`: 出力ファイルを保存するディレクトリのパスを指定します
+  * デフォルト値: `out`(カレントディレクトリ内の'out'フォルダ)
+  * 絶対パスまたは相対パスを指定可能
+  * 指定したディレクトリが存在しない場合は自動的に作成されます
 
 実行すると、以下の処理が行われます:
 
