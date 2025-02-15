@@ -77,3 +77,23 @@ def calculate_timestamp(frame_number: int, fps: int) -> Tuple[int, int]:
     seconds = (frame_number + 1) // fps
     frames = ((frame_number + 1) % fps)
     return seconds, frames
+
+def format_seconds(seconds: int) -> str:
+    """秒数を時間:分:秒の形式に変換する
+    
+    Args:
+        seconds (int): 変換する秒数
+        
+    Returns:
+        str: "HH:MM:SS"形式の時間文字列
+    """
+    hours = seconds // TimeConstants.SECONDS_PER_HOUR
+    minutes = (seconds % TimeConstants.SECONDS_PER_HOUR) // TimeConstants.SECONDS_PER_MINUTE
+    seconds = seconds % TimeConstants.SECONDS_PER_MINUTE
+    
+    format_str = f"{{:{TimecodeFormat.DIGIT_FORMAT}}}"
+    return TimecodeFormat.SEPARATOR.join([
+        format_str.format(hours),
+        format_str.format(minutes),
+        format_str.format(seconds)
+    ])

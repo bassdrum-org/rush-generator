@@ -5,13 +5,7 @@ import time
 from tqdm import tqdm
 from src.file_handler import initialize_project_settings, get_media_file_info
 from src.media_processor import process_media_file, process_empty_directory, setup_video_writer
-
-def format_time(seconds):
-    """秒数を時間:分:秒の形式に変換する"""
-    hours = int(seconds // 3600)
-    minutes = int((seconds % 3600) // 60)
-    seconds = int(seconds % 60)
-    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+from src.timecode import format_seconds
 
 def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, csv_path: str,
                                  output_path: str, padding: int):
@@ -52,7 +46,7 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     print(f"Total Cuts: {len(cut_num)}")
     total_seconds = sum(int(sec) for sec in cut_length_second)
     total_frames = sum((int(sec) * fps + int(frame)) for sec, frame in zip(cut_length_second, cut_length_frame))
-    print(f"Total Duration: {format_time(total_seconds)} ({total_frames} frames)")
+    print(f"Total Duration: {format_seconds(total_seconds)} ({total_frames} frames)")
     print("-" * 50 + "\n")
     
     # 出力動画の設定
@@ -81,7 +75,7 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
             cut_info += f"\nStatus: {cut_status[video_index]}"
             cut_info += f"\nTake: {cut_take[video_index]}"
             cut_info += f"\nStaff: {cut_staff[video_index]}"
-            cut_info += f"\nDuration: {format_time(duration/fps)}"
+            cut_info += f"\nDuration: {format_seconds(int(duration/fps))}"
             print(cut_info)
             
             if os.listdir(dir_path):
@@ -126,7 +120,7 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
                 # ステータス行の更新
                 progress_bar.set_postfix({
                     'FPS': f'{fps_rate:.2f}',
-                    'ETA': format_time(eta)
+                    'ETA': format_seconds(int(eta))
                 })
             
             total_frame_number += frame_count
@@ -171,7 +165,7 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     end_time = time.time()
     elapsed_time = end_time - start_time
     print(f"\nExport completed!")
-    print(f"Total processing time: {format_time(elapsed_time)}")
+    print(f"Total processing time: {format_seconds(int(elapsed_time))}")
     print(f"Average processing speed: {processed_frames / elapsed_time:.2f} FPS")
 
 if __name__ == "__main__":
