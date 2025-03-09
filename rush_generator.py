@@ -152,7 +152,7 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
                 # ステータス行の更新
                 progress_bar.set_postfix({
                     'FPS': f'{fps_rate:.2f}',
-                    'ETA': format_time(eta)
+                    'ETA': format_seconds(int(eta))
                 })
             
             total_frame_number += frame_count
