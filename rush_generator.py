@@ -6,6 +6,45 @@ from tqdm import tqdm
 from src.file_handler import initialize_project_settings, get_media_file_info
 from src.media_processor import process_media_file, process_empty_directory, setup_video_writer
 from src.timecode import format_seconds
+from typing import List
+import numpy as np
+
+def process_frames_with_progress(frames: List[np.ndarray], frame_count: int, out: cv2.VideoWriter,
+                               progress_bar: tqdm, start_time: float, processed_frames: int,
+                               total_frames: int) -> int:
+    """フレームを処理し、進捗状況を更新する
+
+    Args:
+        frames (List[np.ndarray]): 処理するフレームのリスト
+        frame_count (int): フレーム数
+        out (cv2.VideoWriter): 出力用のVideoWriterオブジェクト
+        progress_bar (tqdm): 全体の進捗を表示するtqdmオブジェクト
+        start_time (float): 処理開始時間
+        processed_frames (int): すでに処理されたフレーム数
+        total_frames (int): 処理する総フレーム数
+
+    Returns:
+        int: 更新された処理済みフレーム数
+    """
+    frame_progress = tqdm(frames, total=frame_count, unit='frames', desc='Cut Progress', leave=False)
+    for frame in frame_progress:
+        out.write(frame)
+        processed_frames += 1
+        progress_bar.update(1)
+        
+        # 処理速度と残り時間の計算
+        elapsed_time = time.time() - start_time
+        fps_rate = processed_frames / elapsed_time
+        remaining_frames = total_frames - processed_frames
+        eta = remaining_frames / fps_rate if fps_rate > 0 else 0
+        
+        # ステータス行の更新
+        progress_bar.set_postfix({
+            'FPS': f'{fps_rate:.2f}',
+            'ETA': format_seconds(int(eta))
+        })
+    
+    return processed_frames
 
 def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, csv_path: str,
                                  output_path: str, padding: int):
@@ -105,23 +144,9 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
                 )
                 
             # フレーム処理とプログレス更新
-            frame_progress = tqdm(frames, total=frame_count, unit='frames', desc='Cut Progress', leave=False)
-            for frame in frame_progress:
-                out.write(frame)
-                processed_frames += 1
-                progress_bar.update(1)
-                
-                # 処理速度と残り時間の計算
-                elapsed_time = time.time() - start_time
-                fps_rate = processed_frames / elapsed_time
-                remaining_frames = total_frames - processed_frames
-                eta = remaining_frames / fps_rate if fps_rate > 0 else 0
-                
-                # ステータス行の更新
-                progress_bar.set_postfix({
-                    'FPS': f'{fps_rate:.2f}',
-                    'ETA': format_seconds(int(eta))
-                })
+            processed_frames = process_frames_with_progress(
+                frames, frame_count, out, progress_bar, start_time, processed_frames, total_frames
+            )
             
             total_frame_number += frame_count
             print(f'Cut {cut} completed\n')
@@ -137,23 +162,9 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
             )
             
             # フレーム処理とプログレス更新
-            frame_progress = tqdm(frames, total=frame_count, unit='frames', desc='Cut Progress', leave=False)
-            for frame in frame_progress:
-                out.write(frame)
-                processed_frames += 1
-                progress_bar.update(1)
-                
-                # 処理速度と残り時間の計算
-                elapsed_time = time.time() - start_time
-                fps_rate = processed_frames / elapsed_time
-                remaining_frames = total_frames - processed_frames
-                eta = remaining_frames / fps_rate if fps_rate > 0 else 0
-                
-                # ステータス行の更新
-                progress_bar.set_postfix({
-                    'FPS': f'{fps_rate:.2f}',
-                    'ETA': format_seconds(int(eta))
-                })
+            processed_frames = process_frames_with_progress(
+                frames, frame_count, out, progress_bar, start_time, processed_frames, total_frames
+            )
             
             total_frame_number += frame_count
             print(f'Cut {cut} completed\n')
