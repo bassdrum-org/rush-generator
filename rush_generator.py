@@ -21,7 +21,7 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     Raises:
         ValueError: ビデオディレクトリが存在しない場合
     """
-    # Validate video directory exists
+    # ビデオディレクトリの存在を確認
     if not os.path.isdir(current_path):
         raise ValueError(f"Video directory not found: {current_path}")
     # プロジェクト設定の初期化
@@ -35,7 +35,7 @@ def merge_videos_with_frame_numbers(current_path: str, project_csv_path: str, cs
     print(f"Frame Rate: {fps}fps")
     print("-" * 50)
     
-    # Display cut information
+    # カット情報の表示
     print("\nCut Information Summary:")
     print("-" * 50)
     print(f"{'Cut No.':<10}{'Dur(s)':<8}{'Dur(F)':<8}{'Status':<12}{'Take':<10}{'Staff'}")
@@ -189,7 +189,7 @@ if __name__ == "__main__":
     project_csv_path = os.path.abspath(args.project_csv)
     cut_csv_path = os.path.abspath(args.cut_csv)
     
-    # Validate that CSV files exist
+    # CSVファイルの存在を確認
     if not os.path.isfile(project_csv_path):
         raise ValueError(f"Project info CSV file not found: {project_csv_path}")
     if not os.path.isfile(cut_csv_path):
