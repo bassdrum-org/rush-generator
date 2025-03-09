@@ -206,10 +206,6 @@ if __name__ == "__main__":
     if not os.path.isfile(cut_csv_path):
         raise ValueError(f"Cut info CSV file not found: {cut_csv_path}")
     
-    # 設定ファイルのパス
-    csv_path_project = os.path.join(current, "config", "project", "project_info.csv")
-    csv_path_cut = os.path.join(current, "config", "cut", "cut_info.csv")
-    
     # 出力ディレクトリの作成
     output_dir = os.path.abspath(args.output_dir)
     os.makedirs(output_dir, exist_ok=True)
